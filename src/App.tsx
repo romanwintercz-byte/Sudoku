@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSudoku } from 'sudoku-gen';
 import confetti from 'canvas-confetti';
-import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus } from 'lucide-react';
+import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { cn } from './lib/utils';
 
@@ -27,7 +27,7 @@ type Cell = {
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 type Language = 'cs' | 'en';
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'biker';
 
 const translations = {
   en: {
@@ -517,19 +517,26 @@ export default function App() {
 
   return (
     <div className={theme}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 py-6 px-4 font-sans flex flex-col items-center transition-colors duration-200">
+      <div className={cn(
+        "min-h-screen py-6 px-4 font-sans flex flex-col items-center transition-colors duration-200",
+        "bg-slate-50 text-slate-900",
+        "dark:bg-slate-900 dark:text-slate-100",
+        "biker:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] biker:from-stone-900 biker:to-[#09090b] biker:text-stone-300"
+      )}>
         
         {/* Header */}
         <div className="w-full max-w-[450px] mb-4 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{t.title}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100 biker:text-orange-500 biker:font-black biker:uppercase biker:tracking-widest drop-shadow-sm transition-colors">{t.title}</h1>
           <div className="flex items-center gap-1 sm:gap-2">
-            <button onPointerDown={(e) => { createRipple(e); setSoundEnabled(!soundEnabled); }} className="relative overflow-hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors" title="Toggle Sound">
+            <button onPointerDown={(e) => { createRipple(e); setSoundEnabled(!soundEnabled); }} className="relative overflow-hidden p-2 text-slate-600 dark:text-slate-400 biker:text-stone-400 hover:bg-slate-200 dark:hover:bg-slate-800 biker:hover:bg-stone-800 rounded-md transition-colors" title="Toggle Sound">
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
-            <button onPointerDown={(e) => { createRipple(e); setTheme(theme === 'light' ? 'dark' : 'light'); }} className="relative overflow-hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors" title="Toggle Theme">
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            <button onPointerDown={(e) => { createRipple(e); setTheme(theme === 'light' ? 'dark' : theme === 'dark' ? 'biker' : 'light'); }} className="relative overflow-hidden p-2 text-slate-600 dark:text-slate-400 biker:text-stone-400 hover:bg-slate-200 dark:hover:bg-slate-800 biker:hover:bg-stone-800 rounded-md transition-colors" title="Toggle Theme">
+              {theme === 'light' && <Sun className="w-5 h-5" />}
+              {theme === 'dark' && <Moon className="w-5 h-5" />}
+              {theme === 'biker' && <Flame className="w-5 h-5 text-orange-500" />}
             </button>
-            <button onPointerDown={(e) => { createRipple(e); setLang(lang === 'cs' ? 'en' : 'cs'); }} className="relative overflow-hidden flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors" title="Toggle Language">
+            <button onPointerDown={(e) => { createRipple(e); setLang(lang === 'cs' ? 'en' : 'cs'); }} className="relative overflow-hidden flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 biker:text-stone-400 hover:bg-slate-200 dark:hover:bg-slate-800 biker:hover:bg-stone-800 rounded-md transition-colors" title="Toggle Language">
               <Globe className="w-4 h-4" />
               {lang.toUpperCase()}
             </button>
@@ -537,31 +544,31 @@ export default function App() {
         </div>
 
         {/* Info Bar */}
-        <div className="w-full max-w-[450px] mb-4 flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-400">
+        <div className="w-full max-w-[450px] mb-4 flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-400 biker:text-stone-400">
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-slate-200 dark:bg-slate-800 rounded-md px-2 py-1">
+            <div className="flex items-center bg-slate-200 dark:bg-slate-800 biker:bg-stone-900 biker:border biker:border-stone-800 rounded-md px-2 py-1 transition-colors">
               <select
                 value={difficulty}
                 onChange={(e) => startNewGame(e.target.value as Difficulty)}
-                className="bg-transparent border-none text-slate-800 dark:text-slate-200 font-bold outline-none cursor-pointer p-0 mr-1"
+                className="bg-transparent border-none text-slate-800 dark:text-slate-200 biker:text-orange-500 font-bold outline-none cursor-pointer p-0 mr-1 biker:uppercase biker:tracking-wider biker:text-xs transition-colors"
               >
                 <option value="easy">{t.easy}</option>
                 <option value="medium">{t.medium}</option>
                 <option value="hard">{t.hard}</option>
                 <option value="expert">{t.expert}</option>
               </select>
-              <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className="relative overflow-hidden text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors p-1 rounded-full" title={t.newGame}>
+              <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className="relative overflow-hidden text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 biker:text-stone-500 biker:hover:text-orange-500 transition-colors p-1 rounded-full" title={t.newGame}>
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <span>{t.mistakes}: <span className={cn(mistakes > 0 ? "text-red-500 dark:text-red-400" : "", mistakes === 2 && "inline-block animate-danger")}>{mistakes}/3</span></span>
+            <span>{t.mistakes}: <span className={cn(mistakes > 0 ? "text-red-500 dark:text-red-400 biker:text-red-500" : "", mistakes === 2 && "inline-block animate-danger")}>{mistakes}/3</span></span>
             <span>{t.time}: {formatTime(timer)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(true); }} disabled={isWon || isGameOver} className="relative overflow-hidden hover:text-slate-900 dark:hover:text-slate-100 transition-colors disabled:opacity-50 p-1 rounded-full" title={t.restart}>
+            <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(true); }} disabled={isWon || isGameOver} className="relative overflow-hidden hover:text-slate-900 dark:hover:text-slate-100 biker:hover:text-orange-500 transition-colors disabled:opacity-50 p-1 rounded-full" title={t.restart}>
               <RotateCcw className="w-5 h-5" />
             </button>
-            <button onPointerDown={(e) => { createRipple(e); setIsPaused(!isPaused); }} disabled={isWon || isGameOver} className="relative overflow-hidden hover:text-slate-900 dark:hover:text-slate-100 transition-colors disabled:opacity-50 p-1 rounded-full">
+            <button onPointerDown={(e) => { createRipple(e); setIsPaused(!isPaused); }} disabled={isWon || isGameOver} className="relative overflow-hidden hover:text-slate-900 dark:hover:text-slate-100 biker:hover:text-orange-500 transition-colors disabled:opacity-50 p-1 rounded-full">
               {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
             </button>
           </div>
@@ -574,9 +581,9 @@ export default function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-[450px] mb-6 bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-3 rounded-lg flex items-center gap-3"
+            className="w-full max-w-[450px] mb-6 bg-green-100 dark:bg-green-900/40 biker:bg-green-950/40 border border-green-300 dark:border-green-800 biker:border-green-900 text-green-800 dark:text-green-300 biker:text-green-500 px-4 py-3 rounded-lg flex items-center gap-3 transition-colors"
           >
-            <Trophy className="w-6 h-6 text-green-600 dark:text-green-400 shrink-0" />
+            <Trophy className="w-6 h-6 text-green-600 dark:text-green-400 biker:text-green-500 shrink-0" />
             <div>
               <p className="font-bold">{t.solved}</p>
               <p className="text-sm">{t.solvedDesc(t[difficulty].toLowerCase(), formatTime(timer))}</p>
@@ -591,7 +598,7 @@ export default function App() {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{ rotateX, rotateY, boxShadow, transformStyle: "preserve-3d" }}
-            className="relative grid grid-cols-9 border-2 border-slate-800 dark:border-slate-400 w-full bg-white dark:bg-slate-800 rounded-sm"
+            className="relative grid grid-cols-9 border-2 border-slate-800 dark:border-slate-400 biker:border-orange-600 w-full bg-white dark:bg-slate-800 biker:bg-stone-950 rounded-sm biker:shadow-[0_0_30px_rgba(234,88,12,0.15)] transition-colors"
           >
             {board.map((cell, i) => {
             const row = Math.floor(i / 9);
@@ -610,13 +617,13 @@ export default function App() {
                 onPointerDown={(e) => { createRipple(e); setSelectedIdx(i); }}
                 className={cn(
                   "relative overflow-hidden flex items-center justify-center text-xl sm:text-2xl font-medium cursor-pointer select-none aspect-square transition-colors",
-                  "border border-slate-200 dark:border-slate-700",
-                  col % 3 === 2 && col !== 8 && "border-r-2 border-r-slate-800 dark:border-r-slate-400",
-                  row % 3 === 2 && row !== 8 && "border-b-2 border-b-slate-800 dark:border-b-slate-400",
-                  isSelected ? "bg-blue-200 dark:bg-blue-900/60 z-10 dark:shadow-[inset_0_0_15px_rgba(59,130,246,0.5)] dark:border-blue-400" : isSameValue ? "bg-blue-100 dark:bg-blue-900/40" : isRelated ? "bg-blue-50 dark:bg-blue-900/20" : "bg-white dark:bg-slate-800",
-                  cell.isGiven ? "text-slate-900 dark:text-slate-100" : "text-blue-600 dark:text-blue-400",
-                  cell.isError && "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400",
-                  cell.isError && isSelected && "bg-red-200 dark:bg-red-900/70",
+                  "border border-slate-200 dark:border-slate-700 biker:border-stone-800/80",
+                  col % 3 === 2 && col !== 8 && "border-r-2 border-r-slate-800 dark:border-r-slate-400 biker:border-r-orange-600",
+                  row % 3 === 2 && row !== 8 && "border-b-2 border-b-slate-800 dark:border-b-slate-400 biker:border-b-orange-600",
+                  isSelected ? "bg-blue-200 dark:bg-blue-900/60 biker:bg-orange-950/80 z-10 dark:shadow-[inset_0_0_15px_rgba(59,130,246,0.5)] biker:shadow-[inset_0_0_15px_rgba(234,88,12,0.4)] dark:border-blue-400 biker:border-orange-500" : isSameValue ? "bg-blue-100 dark:bg-blue-900/40 biker:bg-stone-800" : isRelated ? "bg-blue-50 dark:bg-blue-900/20 biker:bg-stone-800/40" : "bg-white dark:bg-slate-800 biker:bg-[#121214]",
+                  cell.isGiven ? "text-slate-900 dark:text-slate-100 biker:text-stone-200" : "text-blue-600 dark:text-blue-400 biker:text-orange-500",
+                  cell.isError && "bg-red-100 dark:bg-red-900/50 biker:bg-red-950/50 text-red-600 dark:text-red-400 biker:text-red-500",
+                  cell.isError && isSelected && "bg-red-200 dark:bg-red-900/70 biker:bg-red-900/60",
                   shakeIdx === i && "animate-shake",
                   flashIndices.includes(i) && "animate-flash",
                   hintedIdx === i && "animate-hint-pulse z-20"
@@ -659,32 +666,32 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-10"
+              className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 biker:bg-[#09090b]/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-colors"
             >
               {showRestartConfirm ? (
                 <>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-6">{t.restartConfirm}</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 biker:text-stone-200 mb-6">{t.restartConfirm}</h2>
                   <div className="flex gap-4">
-                    <button onPointerDown={(e) => { createRipple(e); restartGame(); }} className="relative overflow-hidden px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors shadow-md">
+                    <button onPointerDown={(e) => { createRipple(e); restartGame(); }} className="relative overflow-hidden px-6 py-2 bg-red-600 hover:bg-red-700 biker:bg-orange-600 biker:hover:bg-orange-700 text-white rounded-lg font-medium transition-colors shadow-md">
                       {t.yes}
                     </button>
-                    <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(false); }} className="relative overflow-hidden px-6 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-lg font-medium transition-colors shadow-md">
+                    <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(false); }} className="relative overflow-hidden px-6 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 biker:bg-stone-800 biker:hover:bg-stone-700 text-slate-800 dark:text-slate-200 biker:text-stone-300 rounded-lg font-medium transition-colors shadow-md">
                       {t.no}
                     </button>
                   </div>
                 </>
               ) : isGameOver ? (
                 <>
-                  <h2 className="text-3xl font-bold text-red-600 dark:text-red-400 mb-2">{t.gameOver}</h2>
-                  <p className="text-slate-700 dark:text-slate-300 mb-6">{t.outOfLives}</p>
-                  <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className="relative overflow-hidden px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-md">
+                  <h2 className="text-3xl font-bold text-red-600 dark:text-red-400 biker:text-red-500 mb-2">{t.gameOver}</h2>
+                  <p className="text-slate-700 dark:text-slate-300 biker:text-stone-400 mb-6">{t.outOfLives}</p>
+                  <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className="relative overflow-hidden px-6 py-3 bg-blue-600 hover:bg-blue-700 biker:bg-orange-600 biker:hover:bg-orange-700 text-white rounded-lg font-medium transition-colors shadow-md">
                     {t.newGame}
                   </button>
                 </>
               ) : (
                 <>
-                  <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-6">{t.paused}</h2>
-                  <button onPointerDown={(e) => { createRipple(e); setIsPaused(false); }} className="relative overflow-hidden px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-md flex items-center gap-2">
+                  <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200 biker:text-stone-200 mb-6">{t.paused}</h2>
+                  <button onPointerDown={(e) => { createRipple(e); setIsPaused(false); }} className="relative overflow-hidden px-6 py-3 bg-blue-600 hover:bg-blue-700 biker:bg-orange-600 biker:hover:bg-orange-700 text-white rounded-lg font-medium transition-colors shadow-md flex items-center gap-2">
                     <Play className="w-5 h-5" /> {t.resume}
                   </button>
                 </>
@@ -697,22 +704,22 @@ export default function App() {
 
         {/* Action Bar */}
         <div className="grid grid-cols-4 gap-2 mt-4 w-full max-w-[450px]">
-          <button onPointerDown={(e) => { createRipple(e); handleUndo(); }} disabled={history.length === 0 || isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300">
+          <button onPointerDown={(e) => { createRipple(e); handleUndo(); }} disabled={history.length === 0 || isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400">
             <Undo2 className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.undo}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); handleInput(null); }} disabled={isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300">
+          <button onPointerDown={(e) => { createRipple(e); handleInput(null); }} disabled={isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400">
             <Eraser className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.erase}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); setPencilMode(!pencilMode); }} disabled={isWon || isGameOver || isPaused} className={cn("relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300", pencilMode && "bg-blue-100 dark:bg-blue-900/50 border-blue-400 dark:border-blue-500 text-blue-700 dark:text-blue-300")}>
+          <button onPointerDown={(e) => { createRipple(e); setPencilMode(!pencilMode); }} disabled={isWon || isGameOver || isPaused} className={cn("relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400", pencilMode && "bg-blue-100 dark:bg-blue-900/50 biker:bg-orange-950/50 border-blue-400 dark:border-blue-500 biker:border-orange-600 text-blue-700 dark:text-blue-300 biker:text-orange-500")}>
             <Pencil className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.notes} {pencilMode ? 'ON' : 'OFF'}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={hints <= 0 || isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300">
+          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={hints <= 0 || isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400">
             <div className="relative">
               <Lightbulb className="w-5 h-5 mb-1" />
-              <span className="absolute -top-1.5 -right-2 bg-blue-500 text-white text-[9px] font-bold px-1.5 rounded-full">{hints}</span>
+              <span className="absolute -top-1.5 -right-2 bg-blue-500 biker:bg-orange-600 text-white text-[9px] font-bold px-1.5 rounded-full transition-colors">{hints}</span>
             </div>
             <span className="text-[10px] sm:text-xs font-medium">{t.hint}</span>
           </button>
@@ -728,10 +735,10 @@ export default function App() {
                 onPointerDown={(e) => { createRipple(e); handleInput(num.toString()); }}
                 disabled={isWon || isGameOver || isPaused || (isComplete && !pencilMode)}
                 className={cn(
-                  "relative overflow-hidden w-[calc(20%-0.4rem)] aspect-square sm:aspect-auto sm:py-3 bg-white dark:bg-slate-800 border text-xl font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center",
+                  "relative overflow-hidden w-[calc(20%-0.4rem)] aspect-square sm:aspect-auto sm:py-3 bg-white dark:bg-slate-800 biker:bg-stone-900 border text-xl font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center",
                   isComplete && !pencilMode
-                    ? "border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 cursor-not-allowed"
-                    : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 active:scale-95",
+                    ? "border-slate-200 dark:border-slate-700 biker:border-stone-800/50 bg-slate-100 dark:bg-slate-800/50 biker:bg-stone-900/50 text-slate-300 dark:text-slate-600 biker:text-stone-700 cursor-not-allowed"
+                    : "border-slate-300 dark:border-slate-600 biker:border-stone-700 hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 biker:hover:border-orange-600/50 text-slate-900 dark:text-slate-100 biker:text-orange-500 active:scale-95",
                   (isWon || isGameOver || isPaused) && "opacity-50 pointer-events-none"
                 )}
               >
@@ -742,9 +749,9 @@ export default function App() {
         </div>
         
         {/* Footer */}
-        <div className="mt-8 text-center text-slate-500 dark:text-slate-400 text-sm max-w-[450px] space-y-2">
+        <div className="mt-8 text-center text-slate-500 dark:text-slate-400 biker:text-stone-500 text-sm max-w-[450px] space-y-2 transition-colors">
           {bestTimes[difficulty] !== null && (
-            <p className="font-medium text-slate-600 dark:text-slate-300">
+            <p className="font-medium text-slate-600 dark:text-slate-300 biker:text-stone-400">
               {t.bestTime} ({t[difficulty]}): {formatTime(bestTimes[difficulty]!)}
             </p>
           )}
