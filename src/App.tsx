@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSudoku } from 'sudoku-gen';
 import confetti from 'canvas-confetti';
-import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame, Gamepad2, Landmark, Factory, Anchor, ChevronDown, User, Crown, Star, Heart, Zap, Sparkles, Smile, Settings, X } from 'lucide-react';
+import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame, Gamepad2, Landmark, Factory, Anchor, ChevronDown, User, Crown, Star, Heart, Zap, Sparkles, Smile, Settings, X, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { cn } from './lib/utils';
 
@@ -84,7 +84,11 @@ const translations = {
     buyHint: 'Buy Hint (50 XP)',
     notEnoughXp: 'Not enough XP',
     completed: 'Completed',
-    reward: 'Reward'
+    reward: 'Reward',
+    stats: 'Statistics',
+    gamesPlayed: 'Games Played',
+    gamesWon: 'Games Won',
+    winRate: 'Win Rate'
   },
   cs: {
     title: 'Sudoku',
@@ -116,7 +120,11 @@ const translations = {
     buyHint: 'Koupit nápovědu (50 XP)',
     notEnoughXp: 'Málo XP',
     completed: 'Hotovo',
-    reward: 'Odměna'
+    reward: 'Odměna',
+    stats: 'Statistiky',
+    gamesPlayed: 'Odehrané hry',
+    gamesWon: 'Vyhrané hry',
+    winRate: 'Úspěšnost'
   },
   de: {
     title: 'Sudoku',
@@ -148,7 +156,11 @@ const translations = {
     buyHint: 'Tipp kaufen (50 XP)',
     notEnoughXp: 'Zu wenig XP',
     completed: 'Abgeschlossen',
-    reward: 'Belohnung'
+    reward: 'Belohnung',
+    stats: 'Statistiken',
+    gamesPlayed: 'Gespielte Spiele',
+    gamesWon: 'Gewonnene Spiele',
+    winRate: 'Siegquote'
   },
   es: {
     title: 'Sudoku',
@@ -180,7 +192,11 @@ const translations = {
     buyHint: 'Comprar pista (50 XP)',
     notEnoughXp: 'Sin XP',
     completed: 'Completado',
-    reward: 'Recompensa'
+    reward: 'Recompensa',
+    stats: 'Estadísticas',
+    gamesPlayed: 'Juegos jugados',
+    gamesWon: 'Juegos ganados',
+    winRate: 'Tasa de victorias'
   },
   fr: {
     title: 'Sudoku',
@@ -212,7 +228,11 @@ const translations = {
     buyHint: 'Acheter indice (50 XP)',
     notEnoughXp: 'Pas assez d\'XP',
     completed: 'Terminé',
-    reward: 'Récompense'
+    reward: 'Récompense',
+    stats: 'Statistiques',
+    gamesPlayed: 'Parties jouées',
+    gamesWon: 'Parties gagnées',
+    winRate: 'Taux de victoire'
   },
   zh: {
     title: '数独',
@@ -244,7 +264,11 @@ const translations = {
     buyHint: '购买提示 (50 XP)',
     notEnoughXp: 'XP 不足',
     completed: '已完成',
-    reward: '奖励'
+    reward: '奖励',
+    stats: '统计',
+    gamesPlayed: '进行的游戏',
+    gamesWon: '赢得的游戏',
+    winRate: '胜率'
   },
   ru: {
     title: 'Судоку',
@@ -276,7 +300,11 @@ const translations = {
     buyHint: 'Купить подсказку (50 XP)',
     notEnoughXp: 'Мало XP',
     completed: 'Завершено',
-    reward: 'Награда'
+    reward: 'Награда',
+    stats: 'Статистика',
+    gamesPlayed: 'Игр сыграно',
+    gamesWon: 'Игр выиграно',
+    winRate: 'Процент побед'
   }
 };
 
@@ -313,6 +341,7 @@ export default function App() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Partial<PlayerProfile> | null>(null);
   const [showDailyQuest, setShowDailyQuest] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   const [profiles, setProfiles] = useState<PlayerProfile[]>([
     {
@@ -464,7 +493,13 @@ export default function App() {
         setHistory(data.history);
         setIsWon(data.isWon);
         setIsGameOver(data.isGameOver);
-        if (data.profiles) setProfiles(data.profiles);
+        if (data.profiles) {
+          setProfiles(data.profiles.map((p: any) => ({
+            ...p,
+            hints: (typeof p.hints === 'number' && !isNaN(p.hints)) ? p.hints : 10,
+            dailyQuest: p.dailyQuest || null
+          })));
+        }
         if (data.currentProfileId) setCurrentProfileId(data.currentProfileId);
         // Migration from bestTimes to profiles if needed
         if (data.bestTimes && !data.profiles) {
@@ -1040,6 +1075,18 @@ export default function App() {
                 )}
               </AnimatePresence>
             </div>
+            {/* Stats Button */}
+            <button onPointerDown={(e) => { createRipple(e); setIsStatsOpen(true); }} className={cn(
+              "relative overflow-hidden flex items-center gap-1.5 px-2 py-1.5 text-sm font-medium rounded-md transition-colors",
+              "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
+              "biker:text-stone-400 biker:hover:bg-stone-800",
+              "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
+              "historical:text-stone-600 historical:hover:bg-amber-200",
+              "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
+              "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
+            )} title={t.stats}>
+              <BarChart2 className="w-4 h-4" />
+            </button>
             {/* Profile Dropdown */}
             <div className="relative">
               <button onPointerDown={(e) => { createRipple(e); setIsProfileMenuOpen(!isProfileMenuOpen); }} className={cn(
@@ -1376,6 +1423,127 @@ export default function App() {
                   >
                     Save
                   </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Stats Modal */}
+        <AnimatePresence>
+          {isStatsOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsStatsOpen(false)} />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className={cn(
+                  "relative w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col",
+                  "bg-white dark:bg-slate-900",
+                  "biker:bg-stone-900 biker:border biker:border-stone-800",
+                  "retro:bg-fuchsia-950 retro:border retro:border-fuchsia-800 retro:shadow-[0_0_30px_rgba(232,121,249,0.3)]",
+                  "historical:bg-amber-50 historical:border historical:border-amber-200",
+                  "industrial:bg-zinc-900 industrial:border industrial:border-zinc-700",
+                  "tattoo:bg-[#0a0a0a] tattoo:border tattoo:border-neutral-800"
+                )}
+              >
+                <div className={cn(
+                  "px-6 py-4 border-b flex items-center justify-between",
+                  "border-slate-100 dark:border-slate-800",
+                  "biker:border-stone-800 retro:border-fuchsia-900 historical:border-amber-200 industrial:border-zinc-800 tattoo:border-neutral-900"
+                )}>
+                  <h3 className={cn(
+                    "text-lg font-bold flex items-center gap-2",
+                    "text-slate-800 dark:text-slate-200 biker:text-stone-200 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500"
+                  )}>
+                    <BarChart2 className="w-5 h-5" />
+                    {t.stats}
+                  </h3>
+                  <button onClick={() => setIsStatsOpen(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className={cn(
+                      "p-4 rounded-xl text-center border",
+                      "bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700",
+                      "biker:bg-stone-950 biker:border-stone-800",
+                      "retro:bg-fuchsia-900/20 retro:border-fuchsia-800",
+                      "historical:bg-amber-100/50 historical:border-amber-300",
+                      "industrial:bg-zinc-950 industrial:border-zinc-800",
+                      "tattoo:bg-[#111] tattoo:border-neutral-800"
+                    )}>
+                      <div className="text-3xl font-bold text-slate-800 dark:text-slate-100 biker:text-stone-100 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500">
+                        {currentProfile.gamesPlayed}
+                      </div>
+                      <div className="text-xs mt-1 font-medium text-slate-500 dark:text-slate-400 biker:text-stone-500 retro:text-fuchsia-400 historical:text-amber-700/70 industrial:text-zinc-500 tattoo:text-neutral-500 uppercase tracking-wider">
+                        {t.gamesPlayed}
+                      </div>
+                    </div>
+                    <div className={cn(
+                      "p-4 rounded-xl text-center border",
+                      "bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700",
+                      "biker:bg-stone-950 biker:border-stone-800",
+                      "retro:bg-fuchsia-900/20 retro:border-fuchsia-800",
+                      "historical:bg-amber-100/50 historical:border-amber-300",
+                      "industrial:bg-zinc-950 industrial:border-zinc-800",
+                      "tattoo:bg-[#111] tattoo:border-neutral-800"
+                    )}>
+                      <div className="text-3xl font-bold text-slate-800 dark:text-slate-100 biker:text-stone-100 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500">
+                        {currentProfile.gamesWon}
+                      </div>
+                      <div className="text-xs mt-1 font-medium text-slate-500 dark:text-slate-400 biker:text-stone-500 retro:text-fuchsia-400 historical:text-amber-700/70 industrial:text-zinc-500 tattoo:text-neutral-500 uppercase tracking-wider">
+                        {t.gamesWon}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={cn(
+                    "p-4 rounded-xl border flex items-center justify-between",
+                    "bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700",
+                    "biker:bg-stone-950 biker:border-stone-800",
+                    "retro:bg-fuchsia-900/20 retro:border-fuchsia-800",
+                    "historical:bg-amber-100/50 historical:border-amber-300",
+                    "industrial:bg-zinc-950 industrial:border-zinc-800",
+                    "tattoo:bg-[#111] tattoo:border-neutral-800"
+                  )}>
+                    <div className="text-sm font-medium text-slate-600 dark:text-slate-300 biker:text-stone-300 retro:text-fuchsia-300 historical:text-stone-700 industrial:text-zinc-300 tattoo:text-neutral-400 uppercase tracking-wider">
+                      {t.winRate}
+                    </div>
+                    <div className="text-xl font-bold text-slate-800 dark:text-slate-100 biker:text-stone-100 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500">
+                      {currentProfile.gamesPlayed > 0 ? Math.round((currentProfile.gamesWon / currentProfile.gamesPlayed) * 100) : 0}%
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className={cn(
+                      "text-xs font-bold uppercase tracking-wider mb-3",
+                      "text-slate-500 dark:text-slate-400 biker:text-stone-500 retro:text-fuchsia-500 historical:text-amber-700/70 industrial:text-zinc-500 tattoo:text-neutral-600"
+                    )}>{t.bestTime}</h4>
+                    <div className="space-y-2">
+                      {(['easy', 'medium', 'hard', 'expert'] as Difficulty[]).map(diff => (
+                        <div key={diff} className={cn(
+                          "flex items-center justify-between p-3 rounded-lg border text-sm",
+                          "bg-white dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/50",
+                          "biker:bg-stone-900/50 biker:border-stone-800/50",
+                          "retro:bg-fuchsia-950/50 retro:border-fuchsia-900/50",
+                          "historical:bg-amber-50/50 historical:border-amber-200/50",
+                          "industrial:bg-zinc-900/50 industrial:border-zinc-800/50",
+                          "tattoo:bg-[#0a0a0a]/50 tattoo:border-neutral-800/50"
+                        )}>
+                          <span className="font-medium text-slate-600 dark:text-slate-400 biker:text-stone-400 retro:text-cyan-400/70 historical:text-stone-600 industrial:text-zinc-400 tattoo:text-neutral-500">
+                            {t[diff]}
+                          </span>
+                          <span className="font-mono font-bold text-slate-800 dark:text-slate-200 biker:text-stone-200 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500">
+                            {currentProfile.bestTimes[diff] !== null ? formatTime(currentProfile.bestTimes[diff]!) : '--:--'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
