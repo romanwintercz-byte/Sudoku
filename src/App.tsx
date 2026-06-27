@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSudoku } from 'sudoku-gen';
 import confetti from 'canvas-confetti';
-import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame, Gamepad2, Landmark, Factory, Anchor, ChevronDown } from 'lucide-react';
+import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame, Gamepad2, Landmark, Factory, Anchor, ChevronDown, User, Crown, Star, Heart, Zap, Sparkles, Smile, Settings, X } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { cn } from './lib/utils';
 
@@ -28,6 +28,18 @@ type Cell = {
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 type Language = 'cs' | 'en' | 'de' | 'es' | 'fr' | 'zh' | 'ru';
 type Theme = 'light' | 'dark' | 'biker' | 'retro' | 'historical' | 'industrial' | 'tattoo';
+type AvatarType = 'user' | 'crown' | 'star' | 'heart' | 'zap' | 'sparkles' | 'smile';
+
+interface PlayerProfile {
+  id: string;
+  name: string;
+  avatar: AvatarType;
+  xp: number;
+  level: number;
+  gamesPlayed: number;
+  gamesWon: number;
+  bestTimes: Record<Difficulty, number | null>;
+}
 
 const translations = {
   en: {
@@ -241,9 +253,6 @@ export default function App() {
   const [history, setHistory] = useState<Cell[][]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [pencilMode, setPencilMode] = useState(false);
-  const [bestTimes, setBestTimes] = useState<Record<Difficulty, number | null>>({
-    easy: null, medium: null, hard: null, expert: null
-  });
 
   const [lang, setLang] = useState<Language>('cs');
   const [theme, setTheme] = useState<Theme>('light');
@@ -254,8 +263,37 @@ export default function App() {
   const [flashIndices, setFlashIndices] = useState<number[]>([]);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Partial<PlayerProfile> | null>(null);
+
+  const [profiles, setProfiles] = useState<PlayerProfile[]>([
+    {
+      id: 'default',
+      name: 'Player 1',
+      avatar: 'user',
+      xp: 0,
+      level: 1,
+      gamesPlayed: 0,
+      gamesWon: 0,
+      bestTimes: { easy: null, medium: null, hard: null, expert: null }
+    }
+  ]);
+  const [currentProfileId, setCurrentProfileId] = useState<string>('default');
+
+  const currentProfile = profiles.find(p => p.id === currentProfileId) || profiles[0];
 
   const t = translations[lang];
+
+  const AVATARS: { id: AvatarType; icon: React.ElementType }[] = [
+    { id: 'user', icon: User },
+    { id: 'crown', icon: Crown },
+    { id: 'star', icon: Star },
+    { id: 'heart', icon: Heart },
+    { id: 'zap', icon: Zap },
+    { id: 'sparkles', icon: Sparkles },
+    { id: 'smile', icon: Smile },
+  ];
 
   const LANGUAGES: { id: Language; label: string }[] = [
     { id: 'en', label: 'English' },
@@ -318,7 +356,16 @@ export default function App() {
         setHistory(data.history);
         setIsWon(data.isWon);
         setIsGameOver(data.isGameOver);
-        if (data.bestTimes) setBestTimes(data.bestTimes);
+        if (data.profiles) setProfiles(data.profiles);
+        if (data.currentProfileId) setCurrentProfileId(data.currentProfileId);
+        // Migration from bestTimes to profiles if needed
+        if (data.bestTimes && !data.profiles) {
+          setProfiles(prev => {
+            const newProfiles = [...prev];
+            newProfiles[0].bestTimes = data.bestTimes;
+            return newProfiles;
+          });
+        }
       } catch (e) {}
     } else {
       // Delay initial generation slightly to avoid hydration mismatch
@@ -342,9 +389,9 @@ export default function App() {
   useEffect(() => {
     if (!isLoaded || board.length === 0) return;
     localStorage.setItem('sudoku-save', JSON.stringify({
-      board, solution, difficulty, mistakes, timer, hints, history, isWon, isGameOver, bestTimes
+      board, solution, difficulty, mistakes, timer, hints, history, isWon, isGameOver, profiles, currentProfileId
     }));
-  }, [board, solution, difficulty, mistakes, timer, hints, history, isWon, isGameOver, bestTimes, isLoaded]);
+  }, [board, solution, difficulty, mistakes, timer, hints, history, isWon, isGameOver, profiles, currentProfileId, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -443,7 +490,9 @@ export default function App() {
     setHistory([]);
     setIsPaused(false);
     setDifficulty(diff);
-  }, []);
+    
+    setProfiles(prev => prev.map(p => p.id === currentProfileId ? { ...p, gamesPlayed: p.gamesPlayed + 1 } : p));
+  }, [currentProfileId]);
 
   const checkCompletedRegions = useCallback((currentBoard: Cell[], idx: number) => {
     const row = Math.floor(idx / 9);
@@ -499,15 +548,30 @@ export default function App() {
         confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
       }, 250);
       
-      setBestTimes(prev => {
-        const currentBest = prev[difficulty];
-        if (currentBest === null || timer < currentBest) {
-          return { ...prev, [difficulty]: timer };
-        }
-        return prev;
-      });
+      setProfiles(prev => prev.map(p => {
+        if (p.id !== currentProfileId) return p;
+        const currentBest = p.bestTimes[difficulty];
+        const newBest = (currentBest === null || timer < currentBest) ? timer : currentBest;
+        
+        let xpGained = 0;
+        if (difficulty === 'easy') xpGained = 10;
+        else if (difficulty === 'medium') xpGained = 20;
+        else if (difficulty === 'hard') xpGained = 30;
+        else if (difficulty === 'expert') xpGained = 40;
+        
+        const newXp = p.xp + xpGained;
+        const newLevel = Math.floor(Math.sqrt(newXp / 10)) + 1;
+        
+        return {
+          ...p,
+          gamesWon: p.gamesWon + 1,
+          xp: newXp,
+          level: newLevel,
+          bestTimes: { ...p.bestTimes, [difficulty]: newBest }
+        };
+      }));
     }
-  }, [solution, difficulty, timer, playSound]);
+  }, [solution, difficulty, timer, playSound, currentProfileId]);
 
   const handleInput = useCallback((val: string | null) => {
     if (selectedIdx === null || isWon || isGameOver || isPaused) return;
@@ -860,10 +924,283 @@ export default function App() {
                 )}
               </AnimatePresence>
             </div>
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button onPointerDown={(e) => { createRipple(e); setIsProfileMenuOpen(!isProfileMenuOpen); }} className={cn(
+                "relative overflow-hidden flex items-center gap-1.5 px-2 py-1.5 text-sm font-medium rounded-md transition-colors",
+                "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
+                "biker:text-stone-400 biker:hover:bg-stone-800",
+                "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
+                "historical:text-stone-600 historical:hover:bg-amber-200",
+                "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
+                "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
+              )} title="Toggle Profile">
+                {(() => {
+                  const Icon = AVATARS.find(a => a.id === currentProfile.avatar)?.icon || User;
+                  return <Icon className="w-4 h-4" />;
+                })()}
+                <span className="hidden sm:inline truncate max-w-[80px]">{currentProfile.name}</span>
+                <span className={cn(
+                  "px-1.5 py-0.5 text-[10px] rounded-full border bg-opacity-20",
+                  "border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300",
+                  "biker:border-orange-900 biker:text-orange-500",
+                  "retro:border-cyan-800 retro:text-cyan-400",
+                  "historical:border-amber-400 historical:text-amber-800",
+                  "industrial:border-yellow-700 industrial:text-yellow-500",
+                  "tattoo:border-red-900 tattoo:text-red-500"
+                )}>Lvl {currentProfile.level}</span>
+                <ChevronDown className="w-3 h-3 opacity-70" />
+              </button>
+              
+              <AnimatePresence>
+                {isProfileMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)} />
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className={cn(
+                        "absolute top-full right-0 mt-2 w-56 shadow-xl rounded-lg border z-50 overflow-hidden",
+                        "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700",
+                        "biker:bg-stone-900 biker:border-stone-800",
+                        "retro:bg-fuchsia-950 retro:border-fuchsia-800",
+                        "historical:bg-amber-50 historical:border-amber-200",
+                        "industrial:bg-zinc-900 industrial:border-zinc-700",
+                        "tattoo:bg-[#111] tattoo:border-neutral-800"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-3 border-b text-xs flex items-center justify-between",
+                        "border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400",
+                        "biker:border-stone-800 biker:text-stone-500",
+                        "retro:border-fuchsia-900 retro:text-fuchsia-600",
+                        "historical:border-amber-200 historical:text-amber-800/60",
+                        "industrial:border-zinc-800 industrial:text-zinc-500",
+                        "tattoo:border-neutral-800 tattoo:text-neutral-600"
+                      )}>
+                        <span>PROFILES</span>
+                        <button onClick={() => {
+                          setEditingProfile({ id: `p-${Date.now()}`, name: `Player ${profiles.length + 1}`, avatar: 'user', xp: 0, level: 1, gamesPlayed: 0, gamesWon: 0, bestTimes: { easy: null, medium: null, hard: null, expert: null } });
+                          setIsEditProfileOpen(true);
+                          setIsProfileMenuOpen(false);
+                        }} className="hover:text-blue-500 transition-colors" title="Add Profile"><Plus className="w-4 h-4" /></button>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {profiles.map(p => {
+                          const isSelected = currentProfileId === p.id;
+                          const Icon = AVATARS.find(a => a.id === p.avatar)?.icon || User;
+                          return (
+                            <div key={p.id} className="flex items-center group">
+                              <button 
+                                onClick={() => { setCurrentProfileId(p.id); setIsProfileMenuOpen(false); }}
+                                className={cn(
+                                  "flex-1 flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors",
+                                  isSelected
+                                    ? cn(
+                                      "font-medium",
+                                      "bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400",
+                                      "biker:bg-stone-800 biker:text-orange-500",
+                                      "retro:bg-fuchsia-900 retro:text-cyan-400",
+                                      "historical:bg-amber-200 historical:text-amber-900",
+                                      "industrial:bg-zinc-800 industrial:text-yellow-500",
+                                      "tattoo:bg-neutral-800 tattoo:text-red-500"
+                                    )
+                                    : cn(
+                                      "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50",
+                                      "biker:text-stone-400 biker:hover:bg-stone-800/50",
+                                      "retro:text-fuchsia-300 retro:hover:bg-fuchsia-900/50",
+                                      "historical:text-stone-700 historical:hover:bg-amber-100",
+                                      "industrial:text-zinc-400 industrial:hover:bg-zinc-800/50",
+                                      "tattoo:text-neutral-400 tattoo:hover:bg-[#1a1a1a]"
+                                    )
+                                )}
+                              >
+                                <Icon className="w-4 h-4 opacity-70" />
+                                <div className="flex-1 overflow-hidden">
+                                  <div className="truncate">{p.name}</div>
+                                  <div className="text-[10px] opacity-70 mt-0.5">Lvl {p.level} • {p.xp} XP</div>
+                                </div>
+                              </button>
+                              <button 
+                                onClick={() => { setEditingProfile(p); setIsEditProfileOpen(true); setIsProfileMenuOpen(false); }}
+                                className={cn(
+                                  "p-3 transition-colors",
+                                  isSelected
+                                    ? "bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 biker:bg-stone-800 biker:text-orange-500 retro:bg-fuchsia-900 retro:text-cyan-400 historical:bg-amber-200 historical:text-amber-900 industrial:bg-zinc-800 industrial:text-yellow-500 tattoo:bg-neutral-800 tattoo:text-red-500"
+                                    : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 biker:hover:bg-stone-800/50 retro:hover:bg-fuchsia-900/50 historical:hover:bg-amber-100 industrial:hover:bg-zinc-800/50 tattoo:hover:bg-[#1a1a1a]"
+                                )}
+                              >
+                                <Settings className="w-4 h-4 opacity-50 hover:opacity-100" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
-        {/* Info Bar */}
+        {/* Edit Profile Modal */}
+        <AnimatePresence>
+          {isEditProfileOpen && editingProfile && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsEditProfileOpen(false)} />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className={cn(
+                  "relative w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col",
+                  "bg-white dark:bg-slate-900",
+                  "biker:bg-stone-900 biker:border biker:border-stone-800",
+                  "retro:bg-fuchsia-950 retro:border retro:border-fuchsia-800 retro:shadow-[0_0_30px_rgba(232,121,249,0.3)]",
+                  "historical:bg-amber-50 historical:border historical:border-amber-200",
+                  "industrial:bg-zinc-900 industrial:border industrial:border-zinc-700",
+                  "tattoo:bg-[#0a0a0a] tattoo:border tattoo:border-neutral-800"
+                )}
+              >
+                <div className={cn(
+                  "px-6 py-4 border-b flex items-center justify-between",
+                  "border-slate-100 dark:border-slate-800",
+                  "biker:border-stone-800 retro:border-fuchsia-900 historical:border-amber-200 industrial:border-zinc-800 tattoo:border-neutral-900"
+                )}>
+                  <h3 className={cn(
+                    "text-lg font-bold",
+                    "text-slate-800 dark:text-slate-200 biker:text-stone-200 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500"
+                  )}>Edit Profile</h3>
+                  <button onClick={() => setIsEditProfileOpen(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div>
+                    <label className={cn(
+                      "block text-sm font-medium mb-2",
+                      "text-slate-700 dark:text-slate-300 biker:text-stone-400 retro:text-fuchsia-400 historical:text-stone-700 industrial:text-zinc-400 tattoo:text-neutral-500"
+                    )}>Name</label>
+                    <input 
+                      type="text" 
+                      value={editingProfile.name || ''} 
+                      onChange={e => setEditingProfile({ ...editingProfile, name: e.target.value })}
+                      className={cn(
+                        "w-full px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-all",
+                        "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:ring-blue-500 text-slate-900 dark:text-slate-100",
+                        "biker:bg-stone-950 biker:border-stone-800 biker:focus:ring-orange-600 biker:text-stone-200",
+                        "retro:bg-fuchsia-900/20 retro:border-fuchsia-700 retro:focus:ring-cyan-500 retro:text-cyan-100",
+                        "historical:bg-amber-100/50 historical:border-amber-300 historical:focus:ring-amber-600 historical:text-stone-800",
+                        "industrial:bg-zinc-950 industrial:border-zinc-700 industrial:focus:ring-yellow-600 industrial:text-zinc-200",
+                        "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:focus:ring-red-600 tattoo:text-neutral-300"
+                      )}
+                      maxLength={15}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className={cn(
+                      "block text-sm font-medium mb-2",
+                      "text-slate-700 dark:text-slate-300 biker:text-stone-400 retro:text-fuchsia-400 historical:text-stone-700 industrial:text-zinc-400 tattoo:text-neutral-500"
+                    )}>Avatar</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {AVATARS.map(av => {
+                        const Icon = av.icon;
+                        const isSel = editingProfile.avatar === av.id;
+                        return (
+                          <button
+                            key={av.id}
+                            onClick={() => setEditingProfile({ ...editingProfile, avatar: av.id })}
+                            className={cn(
+                              "aspect-square rounded-lg flex items-center justify-center transition-all border-2",
+                              isSel 
+                                ? cn(
+                                  "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+                                  "biker:border-orange-600 biker:bg-orange-900/20 biker:text-orange-500",
+                                  "retro:border-cyan-500 retro:bg-cyan-900/20 retro:text-cyan-400",
+                                  "historical:border-amber-600 historical:bg-amber-200/50 historical:text-amber-800",
+                                  "industrial:border-yellow-500 industrial:bg-yellow-900/20 industrial:text-yellow-500",
+                                  "tattoo:border-red-600 tattoo:bg-red-900/20 tattoo:text-red-500"
+                                )
+                                : cn(
+                                  "border-transparent bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400",
+                                  "biker:bg-stone-800 biker:hover:bg-stone-700 biker:text-stone-500",
+                                  "retro:bg-fuchsia-900/30 retro:hover:bg-fuchsia-800/50 retro:text-fuchsia-500",
+                                  "historical:bg-amber-100 historical:hover:bg-amber-200 historical:text-stone-500",
+                                  "industrial:bg-zinc-800 industrial:hover:bg-zinc-700 industrial:text-zinc-500",
+                                  "tattoo:bg-[#111] tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-600"
+                                )
+                            )}
+                          >
+                            <Icon className="w-6 h-6" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={cn(
+                  "px-6 py-4 border-t flex justify-between gap-3",
+                  "border-slate-100 dark:border-slate-800",
+                  "biker:border-stone-800 retro:border-fuchsia-900 historical:border-amber-200 industrial:border-zinc-800 tattoo:border-neutral-900"
+                )}>
+                  {profiles.length > 1 && editingProfile.id && profiles.find(p => p.id === editingProfile.id) ? (
+                    <button 
+                      onClick={() => {
+                        const newProfiles = profiles.filter(p => p.id !== editingProfile.id);
+                        setProfiles(newProfiles);
+                        if (currentProfileId === editingProfile.id) {
+                          setCurrentProfileId(newProfiles[0].id);
+                        }
+                        setIsEditProfileOpen(false);
+                      }}
+                      className={cn(
+                        "px-4 py-2 rounded-lg font-medium transition-colors border text-sm",
+                        "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20",
+                        "biker:border-red-900 biker:text-red-500 biker:hover:bg-red-900/20",
+                        "retro:border-red-900 retro:text-red-400 retro:hover:bg-red-900/20",
+                        "historical:border-red-300 historical:text-red-700 historical:hover:bg-red-100",
+                        "industrial:border-red-900 industrial:text-red-500 industrial:hover:bg-red-900/20",
+                        "tattoo:border-red-900 tattoo:text-red-600 tattoo:hover:bg-red-900/20"
+                      )}
+                    >
+                      Delete
+                    </button>
+                  ) : <div></div>}
+                  
+                  <button 
+                    onClick={() => {
+                      if (!editingProfile.name?.trim()) return;
+                      const isNew = !profiles.find(p => p.id === editingProfile.id);
+                      if (isNew) {
+                        setProfiles([...profiles, editingProfile as PlayerProfile]);
+                        setCurrentProfileId(editingProfile.id!);
+                      } else {
+                        setProfiles(profiles.map(p => p.id === editingProfile.id ? { ...p, name: editingProfile.name!, avatar: editingProfile.avatar as AvatarType } : p));
+                      }
+                      setIsEditProfileOpen(false);
+                    }}
+                    className={cn(
+                      "px-6 py-2 rounded-lg font-medium transition-colors text-white shadow-md text-sm",
+                      "bg-blue-600 hover:bg-blue-700",
+                      "biker:bg-orange-600 biker:hover:bg-orange-700",
+                      "retro:bg-cyan-600 retro:hover:bg-cyan-700",
+                      "historical:bg-stone-600 historical:hover:bg-stone-700",
+                      "industrial:bg-yellow-600 industrial:hover:bg-yellow-700",
+                      "tattoo:bg-red-700 tattoo:hover:bg-red-800"
+                    )}
+                  >
+                    Save
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
         <div className={cn(
           "w-full max-w-[450px] mb-4 flex items-center justify-between text-sm font-medium transition-colors",
           "text-slate-600 dark:text-slate-400",
@@ -1251,7 +1588,7 @@ export default function App() {
           "industrial:text-zinc-500",
           "tattoo:text-neutral-600"
         )}>
-          {bestTimes[difficulty] !== null && (
+          {currentProfile.bestTimes[difficulty] !== null && (
             <p className={cn(
               "font-medium",
               "text-slate-600 dark:text-slate-300",
@@ -1261,7 +1598,7 @@ export default function App() {
               "industrial:text-zinc-400",
               "tattoo:text-neutral-400"
             )}>
-              {t.bestTime} ({t[difficulty]}): {formatTime(bestTimes[difficulty]!)}
+              {t.bestTime} ({t[difficulty]}): {formatTime(currentProfile.bestTimes[difficulty]!)}
             </p>
           )}
           <p>{t.instructions}</p>
