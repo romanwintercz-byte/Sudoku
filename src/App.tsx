@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSudoku } from 'sudoku-gen';
 import confetti from 'canvas-confetti';
-import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame } from 'lucide-react';
+import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame, Gamepad2, Landmark, Factory, Anchor, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { cn } from './lib/utils';
 
@@ -27,7 +27,7 @@ type Cell = {
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 type Language = 'cs' | 'en';
-type Theme = 'light' | 'dark' | 'biker';
+type Theme = 'light' | 'dark' | 'biker' | 'retro' | 'historical' | 'industrial' | 'tattoo';
 
 const translations = {
   en: {
@@ -55,6 +55,7 @@ const translations = {
     restartConfirm: 'Restart this puzzle?',
     yes: 'Yes',
     no: 'No',
+    themes: { light: 'Light', dark: 'Dark', biker: 'Biker', retro: 'Retro', historical: 'Historical', industrial: 'Industrial', tattoo: 'Tattoo' }
   },
   cs: {
     title: 'Sudoku',
@@ -81,6 +82,7 @@ const translations = {
     restartConfirm: 'Restartovat tuto hru?',
     yes: 'Ano',
     no: 'Ne',
+    themes: { light: 'Světlý', dark: 'Tmavý', biker: 'Motorkář', retro: 'Retro', historical: 'Historický', industrial: 'Industriální', tattoo: 'Tattoo' }
   }
 };
 
@@ -115,8 +117,19 @@ export default function App() {
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
   const [hintedIdx, setHintedIdx] = useState<number | null>(null);
   const [flashIndices, setFlashIndices] = useState<number[]>([]);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
   const t = translations[lang];
+
+  const THEMES: { id: Theme; icon: React.ElementType }[] = [
+    { id: 'light', icon: Sun },
+    { id: 'dark', icon: Moon },
+    { id: 'biker', icon: Flame },
+    { id: 'retro', icon: Gamepad2 },
+    { id: 'historical', icon: Landmark },
+    { id: 'industrial', icon: Factory },
+    { id: 'tattoo', icon: Anchor },
+  ];
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -521,22 +534,123 @@ export default function App() {
         "min-h-screen py-6 px-4 font-sans flex flex-col items-center transition-colors duration-200",
         "bg-slate-50 text-slate-900",
         "dark:bg-slate-900 dark:text-slate-100",
-        "biker:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] biker:from-stone-900 biker:to-[#09090b] biker:text-stone-300"
+        "biker:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] biker:from-stone-900 biker:to-[#09090b] biker:text-stone-300",
+        "retro:bg-fuchsia-950 retro:text-cyan-400",
+        "historical:bg-amber-50 historical:text-stone-800",
+        "industrial:bg-zinc-800 industrial:text-zinc-300",
+        "tattoo:bg-neutral-950 tattoo:text-neutral-300"
       )}>
         
         {/* Header */}
-        <div className="w-full max-w-[450px] mb-4 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100 biker:text-orange-500 biker:font-black biker:uppercase biker:tracking-widest drop-shadow-sm transition-colors">{t.title}</h1>
+        <div className="w-full max-w-[450px] mb-4 flex items-center justify-between relative z-50">
+          <h1 className={cn(
+            "text-3xl font-bold tracking-tight drop-shadow-sm transition-colors",
+            "text-slate-800 dark:text-slate-100",
+            "biker:text-orange-500 biker:font-black biker:uppercase biker:tracking-widest",
+            "retro:text-fuchsia-400 retro:font-mono retro:uppercase retro:tracking-widest retro:drop-shadow-[0_0_8px_rgba(232,121,249,0.8)]",
+            "historical:text-amber-900 historical:font-serif historical:italic",
+            "industrial:text-yellow-500 industrial:font-black industrial:tracking-tighter industrial:uppercase",
+            "tattoo:text-red-600 tattoo:font-serif tattoo:tracking-widest tattoo:uppercase"
+          )}>{t.title}</h1>
           <div className="flex items-center gap-1 sm:gap-2">
-            <button onPointerDown={(e) => { createRipple(e); setSoundEnabled(!soundEnabled); }} className="relative overflow-hidden p-2 text-slate-600 dark:text-slate-400 biker:text-stone-400 hover:bg-slate-200 dark:hover:bg-slate-800 biker:hover:bg-stone-800 rounded-md transition-colors" title="Toggle Sound">
+            <button onPointerDown={(e) => { createRipple(e); setSoundEnabled(!soundEnabled); }} className={cn(
+              "relative overflow-hidden p-2 rounded-md transition-colors",
+              "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
+              "biker:text-stone-400 biker:hover:bg-stone-800",
+              "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
+              "historical:text-stone-600 historical:hover:bg-amber-200",
+              "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
+              "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
+            )} title="Toggle Sound">
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
-            <button onPointerDown={(e) => { createRipple(e); setTheme(theme === 'light' ? 'dark' : theme === 'dark' ? 'biker' : 'light'); }} className="relative overflow-hidden p-2 text-slate-600 dark:text-slate-400 biker:text-stone-400 hover:bg-slate-200 dark:hover:bg-slate-800 biker:hover:bg-stone-800 rounded-md transition-colors" title="Toggle Theme">
-              {theme === 'light' && <Sun className="w-5 h-5" />}
-              {theme === 'dark' && <Moon className="w-5 h-5" />}
-              {theme === 'biker' && <Flame className="w-5 h-5 text-orange-500" />}
-            </button>
-            <button onPointerDown={(e) => { createRipple(e); setLang(lang === 'cs' ? 'en' : 'cs'); }} className="relative overflow-hidden flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 biker:text-stone-400 hover:bg-slate-200 dark:hover:bg-slate-800 biker:hover:bg-stone-800 rounded-md transition-colors" title="Toggle Language">
+            
+            {/* Theme Dropdown */}
+            <div className="relative">
+              <button onPointerDown={(e) => { createRipple(e); setIsThemeMenuOpen(!isThemeMenuOpen); }} className={cn(
+                "relative overflow-hidden flex items-center gap-1 p-2 rounded-md transition-colors",
+                "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
+                "biker:text-stone-400 biker:hover:bg-stone-800",
+                "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
+                "historical:text-stone-600 historical:hover:bg-amber-200",
+                "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
+                "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
+              )} title="Toggle Theme">
+                {(() => {
+                  const CurrentIcon = THEMES.find(th => th.id === theme)?.icon || Sun;
+                  return <CurrentIcon className="w-5 h-5" />;
+                })()}
+                <ChevronDown className="w-3 h-3 opacity-70" />
+              </button>
+              
+              <AnimatePresence>
+                {isThemeMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsThemeMenuOpen(false)} />
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className={cn(
+                        "absolute top-full right-0 mt-2 w-48 shadow-xl rounded-lg border z-50 overflow-hidden",
+                        "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700",
+                        "biker:bg-stone-900 biker:border-stone-800",
+                        "retro:bg-fuchsia-950 retro:border-fuchsia-800",
+                        "historical:bg-amber-50 historical:border-amber-200",
+                        "industrial:bg-zinc-900 industrial:border-zinc-700",
+                        "tattoo:bg-[#111] tattoo:border-neutral-800"
+                      )}
+                    >
+                      {THEMES.map(th => {
+                        const Icon = th.icon;
+                        const isSelected = theme === th.id;
+                        return (
+                          <button 
+                            key={th.id}
+                            onClick={() => { setTheme(th.id); setIsThemeMenuOpen(false); }}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors",
+                              isSelected
+                                ? cn(
+                                  "font-medium",
+                                  "bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400",
+                                  "biker:bg-stone-800 biker:text-orange-500",
+                                  "retro:bg-fuchsia-900 retro:text-cyan-400",
+                                  "historical:bg-amber-200 historical:text-amber-900",
+                                  "industrial:bg-zinc-800 industrial:text-yellow-500",
+                                  "tattoo:bg-neutral-800 tattoo:text-red-500"
+                                )
+                                : cn(
+                                  "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50",
+                                  "biker:text-stone-400 biker:hover:bg-stone-800/50",
+                                  "retro:text-fuchsia-300 retro:hover:bg-fuchsia-900/50",
+                                  "historical:text-stone-700 historical:hover:bg-amber-100",
+                                  "industrial:text-zinc-400 industrial:hover:bg-zinc-800/50",
+                                  "tattoo:text-neutral-400 tattoo:hover:bg-[#1a1a1a]"
+                                )
+                            )}
+                          >
+                            <Icon className="w-5 h-5" />
+                            {/* @ts-ignore */}
+                            {t.themes[th.id]}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <button onPointerDown={(e) => { createRipple(e); setLang(lang === 'cs' ? 'en' : 'cs'); }} className={cn(
+              "relative overflow-hidden flex items-center gap-1 px-2 py-1.5 text-sm font-medium rounded-md transition-colors",
+              "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
+              "biker:text-stone-400 biker:hover:bg-stone-800",
+              "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
+              "historical:text-stone-600 historical:hover:bg-amber-200",
+              "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
+              "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
+            )} title="Toggle Language">
               <Globe className="w-4 h-4" />
               {lang.toUpperCase()}
             </button>
@@ -544,31 +658,82 @@ export default function App() {
         </div>
 
         {/* Info Bar */}
-        <div className="w-full max-w-[450px] mb-4 flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-400 biker:text-stone-400">
+        <div className={cn(
+          "w-full max-w-[450px] mb-4 flex items-center justify-between text-sm font-medium transition-colors",
+          "text-slate-600 dark:text-slate-400",
+          "biker:text-stone-400",
+          "retro:text-cyan-400",
+          "historical:text-stone-600",
+          "industrial:text-zinc-400",
+          "tattoo:text-neutral-500"
+        )}>
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-slate-200 dark:bg-slate-800 biker:bg-stone-900 biker:border biker:border-stone-800 rounded-md px-2 py-1 transition-colors">
+            <div className={cn(
+              "flex items-center rounded-md px-2 py-1 transition-colors",
+              "bg-slate-200 dark:bg-slate-800",
+              "biker:bg-stone-900 biker:border biker:border-stone-800",
+              "retro:bg-fuchsia-900/40 retro:border retro:border-fuchsia-800",
+              "historical:bg-amber-100 historical:border historical:border-amber-200",
+              "industrial:bg-zinc-900 industrial:border industrial:border-zinc-700",
+              "tattoo:bg-[#111] tattoo:border tattoo:border-neutral-800"
+            )}>
               <select
                 value={difficulty}
                 onChange={(e) => startNewGame(e.target.value as Difficulty)}
-                className="bg-transparent border-none text-slate-800 dark:text-slate-200 biker:text-orange-500 font-bold outline-none cursor-pointer p-0 mr-1 biker:uppercase biker:tracking-wider biker:text-xs transition-colors"
+                className={cn(
+                  "bg-transparent border-none font-bold outline-none cursor-pointer p-0 mr-1 transition-colors",
+                  "text-slate-800 dark:text-slate-200",
+                  "biker:text-orange-500 biker:uppercase biker:tracking-wider biker:text-xs",
+                  "retro:text-cyan-300 retro:uppercase",
+                  "historical:text-stone-800",
+                  "industrial:text-yellow-500",
+                  "tattoo:text-red-500"
+                )}
               >
                 <option value="easy">{t.easy}</option>
                 <option value="medium">{t.medium}</option>
                 <option value="hard">{t.hard}</option>
                 <option value="expert">{t.expert}</option>
               </select>
-              <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className="relative overflow-hidden text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 biker:text-stone-500 biker:hover:text-orange-500 transition-colors p-1 rounded-full" title={t.newGame}>
+              <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className={cn(
+                "relative overflow-hidden p-1 rounded-full transition-colors",
+                "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100",
+                "biker:text-stone-500 biker:hover:text-orange-500",
+                "retro:text-fuchsia-500 retro:hover:text-cyan-300",
+                "historical:text-stone-500 historical:hover:text-stone-800",
+                "industrial:text-zinc-500 industrial:hover:text-yellow-500",
+                "tattoo:text-neutral-600 tattoo:hover:text-red-500"
+              )} title={t.newGame}>
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <span>{t.mistakes}: <span className={cn(mistakes > 0 ? "text-red-500 dark:text-red-400 biker:text-red-500" : "", mistakes === 2 && "inline-block animate-danger")}>{mistakes}/3</span></span>
+            <span>{t.mistakes}: <span className={cn(
+              mistakes > 0 && "text-red-500 dark:text-red-400 biker:text-red-500 retro:text-red-400 historical:text-red-600 industrial:text-red-500 tattoo:text-red-500", 
+              mistakes === 2 && "inline-block animate-danger"
+            )}>{mistakes}/3</span></span>
             <span>{t.time}: {formatTime(timer)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(true); }} disabled={isWon || isGameOver} className="relative overflow-hidden hover:text-slate-900 dark:hover:text-slate-100 biker:hover:text-orange-500 transition-colors disabled:opacity-50 p-1 rounded-full" title={t.restart}>
+            <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(true); }} disabled={isWon || isGameOver} className={cn(
+              "relative overflow-hidden p-1 rounded-full transition-colors disabled:opacity-50",
+              "hover:text-slate-900 dark:hover:text-slate-100",
+              "biker:hover:text-orange-500",
+              "retro:hover:text-cyan-300",
+              "historical:hover:text-stone-800",
+              "industrial:hover:text-yellow-500",
+              "tattoo:hover:text-red-500"
+            )} title={t.restart}>
               <RotateCcw className="w-5 h-5" />
             </button>
-            <button onPointerDown={(e) => { createRipple(e); setIsPaused(!isPaused); }} disabled={isWon || isGameOver} className="relative overflow-hidden hover:text-slate-900 dark:hover:text-slate-100 biker:hover:text-orange-500 transition-colors disabled:opacity-50 p-1 rounded-full">
+            <button onPointerDown={(e) => { createRipple(e); setIsPaused(!isPaused); }} disabled={isWon || isGameOver} className={cn(
+              "relative overflow-hidden p-1 rounded-full transition-colors disabled:opacity-50",
+              "hover:text-slate-900 dark:hover:text-slate-100",
+              "biker:hover:text-orange-500",
+              "retro:hover:text-cyan-300",
+              "historical:hover:text-stone-800",
+              "industrial:hover:text-yellow-500",
+              "tattoo:hover:text-red-500"
+            )}>
               {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
             </button>
           </div>
@@ -581,9 +746,20 @@ export default function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-[450px] mb-6 bg-green-100 dark:bg-green-900/40 biker:bg-green-950/40 border border-green-300 dark:border-green-800 biker:border-green-900 text-green-800 dark:text-green-300 biker:text-green-500 px-4 py-3 rounded-lg flex items-center gap-3 transition-colors"
+            className={cn(
+              "w-full max-w-[450px] mb-6 px-4 py-3 rounded-lg flex items-center gap-3 transition-colors",
+              "bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-800 text-green-800 dark:text-green-300",
+              "biker:bg-green-950/40 biker:border-green-900 biker:text-green-500",
+              "retro:bg-emerald-950/50 retro:border-emerald-500 retro:text-emerald-400",
+              "historical:bg-green-100/50 historical:border-green-300 historical:text-green-800",
+              "industrial:bg-emerald-900/30 industrial:border-emerald-700 industrial:text-emerald-500",
+              "tattoo:bg-green-950/40 tattoo:border-green-900 tattoo:text-green-600"
+            )}
           >
-            <Trophy className="w-6 h-6 text-green-600 dark:text-green-400 biker:text-green-500 shrink-0" />
+            <Trophy className={cn(
+              "w-6 h-6 shrink-0",
+              "text-green-600 dark:text-green-400 biker:text-green-500 retro:text-emerald-400 historical:text-green-700 industrial:text-emerald-500 tattoo:text-green-600"
+            )} />
             <div>
               <p className="font-bold">{t.solved}</p>
               <p className="text-sm">{t.solvedDesc(t[difficulty].toLowerCase(), formatTime(timer))}</p>
@@ -593,12 +769,20 @@ export default function App() {
         </AnimatePresence>
 
         {/* Board */}
-        <div style={{ perspective: 1000 }} className="w-full max-w-[450px]">
+        <div style={{ perspective: 1000 }} className="w-full max-w-[450px] z-10">
           <motion.div
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{ rotateX, rotateY, boxShadow, transformStyle: "preserve-3d" }}
-            className="relative grid grid-cols-9 border-2 border-slate-800 dark:border-slate-400 biker:border-orange-600 w-full bg-white dark:bg-slate-800 biker:bg-stone-950 rounded-sm biker:shadow-[0_0_30px_rgba(234,88,12,0.15)] transition-colors"
+            className={cn(
+              "relative grid grid-cols-9 border-2 w-full transition-colors",
+              "bg-white dark:bg-slate-800 border-slate-800 dark:border-slate-400 rounded-sm",
+              "biker:bg-stone-950 biker:border-orange-600 biker:shadow-[0_0_30px_rgba(234,88,12,0.15)]",
+              "retro:bg-fuchsia-950 retro:border-cyan-500 retro:shadow-[0_0_30px_rgba(6,182,212,0.3)]",
+              "historical:bg-amber-100 historical:border-stone-600 historical:shadow-[0_0_20px_rgba(120,113,108,0.2)] historical:rounded-md",
+              "industrial:bg-zinc-900 industrial:border-yellow-600 industrial:shadow-[inset_0_0_15px_rgba(0,0,0,0.8),_0_0_20px_rgba(202,138,4,0.1)]",
+              "tattoo:bg-[#0a0a0a] tattoo:border-red-800 tattoo:shadow-[0_0_40px_rgba(220,38,38,0.15)] tattoo:rounded-xl overflow-hidden"
+            )}
           >
             {board.map((cell, i) => {
             const row = Math.floor(i / 9);
@@ -616,14 +800,22 @@ export default function App() {
                 key={i}
                 onPointerDown={(e) => { createRipple(e); setSelectedIdx(i); }}
                 className={cn(
-                  "relative overflow-hidden flex items-center justify-center text-xl sm:text-2xl font-medium cursor-pointer select-none aspect-square transition-colors",
-                  "border border-slate-200 dark:border-slate-700 biker:border-stone-800/80",
-                  col % 3 === 2 && col !== 8 && "border-r-2 border-r-slate-800 dark:border-r-slate-400 biker:border-r-orange-600",
-                  row % 3 === 2 && row !== 8 && "border-b-2 border-b-slate-800 dark:border-b-slate-400 biker:border-b-orange-600",
-                  isSelected ? "bg-blue-200 dark:bg-blue-900/60 biker:bg-orange-950/80 z-10 dark:shadow-[inset_0_0_15px_rgba(59,130,246,0.5)] biker:shadow-[inset_0_0_15px_rgba(234,88,12,0.4)] dark:border-blue-400 biker:border-orange-500" : isSameValue ? "bg-blue-100 dark:bg-blue-900/40 biker:bg-stone-800" : isRelated ? "bg-blue-50 dark:bg-blue-900/20 biker:bg-stone-800/40" : "bg-white dark:bg-slate-800 biker:bg-[#121214]",
-                  cell.isGiven ? "text-slate-900 dark:text-slate-100 biker:text-stone-200" : "text-blue-600 dark:text-blue-400 biker:text-orange-500",
-                  cell.isError && "bg-red-100 dark:bg-red-900/50 biker:bg-red-950/50 text-red-600 dark:text-red-400 biker:text-red-500",
-                  cell.isError && isSelected && "bg-red-200 dark:bg-red-900/70 biker:bg-red-900/60",
+                  "relative overflow-hidden flex items-center justify-center text-xl sm:text-2xl font-medium cursor-pointer select-none aspect-square transition-colors border",
+                  "border-slate-200 dark:border-slate-700 biker:border-stone-800/80 retro:border-fuchsia-900/50 historical:border-amber-200 industrial:border-zinc-700 tattoo:border-neutral-800",
+                  col % 3 === 2 && col !== 8 && "border-r-2 border-r-slate-800 dark:border-r-slate-400 biker:border-r-orange-600 retro:border-r-cyan-500 historical:border-r-stone-600 industrial:border-r-yellow-600 tattoo:border-r-red-800",
+                  row % 3 === 2 && row !== 8 && "border-b-2 border-b-slate-800 dark:border-b-slate-400 biker:border-b-orange-600 retro:border-b-cyan-500 historical:border-b-stone-600 industrial:border-b-yellow-600 tattoo:border-b-red-800",
+                  isSelected 
+                    ? "z-10 bg-blue-200 dark:bg-blue-900/60 biker:bg-orange-950/80 retro:bg-cyan-900/40 historical:bg-amber-300 industrial:bg-yellow-900/30 tattoo:bg-red-950/40 dark:shadow-[inset_0_0_15px_rgba(59,130,246,0.5)] biker:shadow-[inset_0_0_15px_rgba(234,88,12,0.4)] retro:shadow-[inset_0_0_15px_rgba(6,182,212,0.6)] historical:shadow-[inset_0_0_10px_rgba(120,113,108,0.3)] industrial:shadow-[inset_0_0_15px_rgba(202,138,4,0.4)] tattoo:shadow-[inset_0_0_20px_rgba(220,38,38,0.3)] dark:border-blue-400 biker:border-orange-500 retro:border-cyan-400 historical:border-stone-500 industrial:border-yellow-500 tattoo:border-red-600" 
+                    : isSameValue 
+                      ? "bg-blue-100 dark:bg-blue-900/40 biker:bg-stone-800 retro:bg-fuchsia-800/40 historical:bg-amber-200 industrial:bg-zinc-700/50 tattoo:bg-[#222]" 
+                      : isRelated 
+                        ? "bg-blue-50 dark:bg-blue-900/20 biker:bg-stone-800/40 retro:bg-fuchsia-900/30 historical:bg-amber-100/50 industrial:bg-zinc-800/50 tattoo:bg-[#1a1a1a]" 
+                        : "bg-white dark:bg-slate-800 biker:bg-[#121214] retro:bg-fuchsia-950 historical:bg-amber-50 industrial:bg-zinc-900 tattoo:bg-[#0a0a0a]",
+                  cell.isGiven 
+                    ? "text-slate-900 dark:text-slate-100 biker:text-stone-200 retro:text-fuchsia-200 historical:text-stone-800 industrial:text-zinc-200 tattoo:text-neutral-100" 
+                    : "text-blue-600 dark:text-blue-400 biker:text-orange-500 retro:text-cyan-400 historical:text-amber-700 industrial:text-yellow-500 tattoo:text-red-500",
+                  cell.isError && "bg-red-100 dark:bg-red-900/50 biker:bg-red-950/50 retro:bg-red-950/60 historical:bg-red-200/50 industrial:bg-red-900/30 tattoo:bg-red-950/40 text-red-600 dark:text-red-400 biker:text-red-500 retro:text-red-400 historical:text-red-800 industrial:text-red-500 tattoo:text-red-600",
+                  cell.isError && isSelected && "bg-red-200 dark:bg-red-900/70 biker:bg-red-900/60 retro:bg-red-900/70 historical:bg-red-300/50 industrial:bg-red-800/40 tattoo:bg-red-900/50",
                   shakeIdx === i && "animate-shake",
                   flashIndices.includes(i) && "animate-flash",
                   hintedIdx === i && "animate-hint-pulse z-20"
@@ -648,7 +840,10 @@ export default function App() {
                       className="grid grid-cols-3 grid-rows-3 w-full h-full p-0.5 absolute"
                     >
                       {[1,2,3,4,5,6,7,8,9].map(n => (
-                        <div key={n} className="flex items-center justify-center text-[8px] sm:text-[10px] leading-none text-slate-500 dark:text-slate-400">
+                        <div key={n} className={cn(
+                          "flex items-center justify-center text-[8px] sm:text-[10px] leading-none",
+                          "text-slate-500 dark:text-slate-400 biker:text-stone-500 retro:text-fuchsia-400 historical:text-stone-500 industrial:text-zinc-500 tattoo:text-neutral-500"
+                        )}>
                           {cell.notes.includes(n) ? n : ''}
                         </div>
                       ))}
@@ -666,32 +861,64 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 biker:bg-[#09090b]/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-colors"
+              className={cn(
+                "absolute inset-0 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-colors",
+                "bg-white/80 dark:bg-slate-900/80 biker:bg-[#09090b]/90 retro:bg-fuchsia-950/90 historical:bg-[#fdfaeb]/90 industrial:bg-zinc-900/90 tattoo:bg-[#0a0a0a]/90"
+              )}
             >
               {showRestartConfirm ? (
                 <>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 biker:text-stone-200 mb-6">{t.restartConfirm}</h2>
+                  <h2 className={cn(
+                    "text-2xl font-bold mb-6",
+                    "text-slate-800 dark:text-slate-200 biker:text-stone-200 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500"
+                  )}>{t.restartConfirm}</h2>
                   <div className="flex gap-4">
-                    <button onPointerDown={(e) => { createRipple(e); restartGame(); }} className="relative overflow-hidden px-6 py-2 bg-red-600 hover:bg-red-700 biker:bg-orange-600 biker:hover:bg-orange-700 text-white rounded-lg font-medium transition-colors shadow-md">
+                    <button onPointerDown={(e) => { createRipple(e); restartGame(); }} className={cn(
+                      "relative overflow-hidden px-6 py-2 rounded-lg font-medium transition-colors shadow-md text-white",
+                      "bg-red-600 hover:bg-red-700 biker:bg-orange-600 biker:hover:bg-orange-700 retro:bg-cyan-600 retro:hover:bg-cyan-700 historical:bg-stone-600 historical:hover:bg-stone-700 industrial:bg-yellow-600 industrial:hover:bg-yellow-700 tattoo:bg-red-700 tattoo:hover:bg-red-800"
+                    )}>
                       {t.yes}
                     </button>
-                    <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(false); }} className="relative overflow-hidden px-6 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 biker:bg-stone-800 biker:hover:bg-stone-700 text-slate-800 dark:text-slate-200 biker:text-stone-300 rounded-lg font-medium transition-colors shadow-md">
+                    <button onPointerDown={(e) => { createRipple(e); setShowRestartConfirm(false); }} className={cn(
+                      "relative overflow-hidden px-6 py-2 rounded-lg font-medium transition-colors shadow-md",
+                      "bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200",
+                      "biker:bg-stone-800 biker:hover:bg-stone-700 biker:text-stone-300",
+                      "retro:bg-fuchsia-900 retro:hover:bg-fuchsia-800 retro:text-fuchsia-200",
+                      "historical:bg-amber-100 historical:hover:bg-amber-200 historical:text-stone-700",
+                      "industrial:bg-zinc-800 industrial:hover:bg-zinc-700 industrial:text-zinc-300",
+                      "tattoo:bg-[#111] tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-400"
+                    )}>
                       {t.no}
                     </button>
                   </div>
                 </>
               ) : isGameOver ? (
                 <>
-                  <h2 className="text-3xl font-bold text-red-600 dark:text-red-400 biker:text-red-500 mb-2">{t.gameOver}</h2>
-                  <p className="text-slate-700 dark:text-slate-300 biker:text-stone-400 mb-6">{t.outOfLives}</p>
-                  <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className="relative overflow-hidden px-6 py-3 bg-blue-600 hover:bg-blue-700 biker:bg-orange-600 biker:hover:bg-orange-700 text-white rounded-lg font-medium transition-colors shadow-md">
+                  <h2 className={cn(
+                    "text-3xl font-bold mb-2",
+                    "text-red-600 dark:text-red-400 biker:text-red-500 retro:text-red-400 historical:text-red-700 industrial:text-red-500 tattoo:text-red-600"
+                  )}>{t.gameOver}</h2>
+                  <p className={cn(
+                    "mb-6",
+                    "text-slate-700 dark:text-slate-300 biker:text-stone-400 retro:text-fuchsia-300 historical:text-stone-600 industrial:text-zinc-400 tattoo:text-neutral-500"
+                  )}>{t.outOfLives}</p>
+                  <button onPointerDown={(e) => { createRipple(e); startNewGame(difficulty); }} className={cn(
+                    "relative overflow-hidden px-6 py-3 rounded-lg font-medium transition-colors shadow-md text-white",
+                    "bg-blue-600 hover:bg-blue-700 biker:bg-orange-600 biker:hover:bg-orange-700 retro:bg-cyan-600 retro:hover:bg-cyan-700 historical:bg-stone-600 historical:hover:bg-stone-700 industrial:bg-yellow-600 industrial:hover:bg-yellow-700 tattoo:bg-red-700 tattoo:hover:bg-red-800"
+                  )}>
                     {t.newGame}
                   </button>
                 </>
               ) : (
                 <>
-                  <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200 biker:text-stone-200 mb-6">{t.paused}</h2>
-                  <button onPointerDown={(e) => { createRipple(e); setIsPaused(false); }} className="relative overflow-hidden px-6 py-3 bg-blue-600 hover:bg-blue-700 biker:bg-orange-600 biker:hover:bg-orange-700 text-white rounded-lg font-medium transition-colors shadow-md flex items-center gap-2">
+                  <h2 className={cn(
+                    "text-3xl font-bold mb-6",
+                    "text-slate-800 dark:text-slate-200 biker:text-stone-200 retro:text-cyan-300 historical:text-stone-800 industrial:text-yellow-500 tattoo:text-red-500"
+                  )}>{t.paused}</h2>
+                  <button onPointerDown={(e) => { createRipple(e); setIsPaused(false); }} className={cn(
+                    "relative overflow-hidden px-6 py-3 rounded-lg font-medium transition-colors shadow-md flex items-center gap-2 text-white",
+                    "bg-blue-600 hover:bg-blue-700 biker:bg-orange-600 biker:hover:bg-orange-700 retro:bg-cyan-600 retro:hover:bg-cyan-700 historical:bg-stone-600 historical:hover:bg-stone-700 industrial:bg-yellow-600 industrial:hover:bg-yellow-700 tattoo:bg-red-700 tattoo:hover:bg-red-800"
+                  )}>
                     <Play className="w-5 h-5" /> {t.resume}
                   </button>
                 </>
@@ -704,22 +931,66 @@ export default function App() {
 
         {/* Action Bar */}
         <div className="grid grid-cols-4 gap-2 mt-4 w-full max-w-[450px]">
-          <button onPointerDown={(e) => { createRipple(e); handleUndo(); }} disabled={history.length === 0 || isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400">
+          <button onPointerDown={(e) => { createRipple(e); handleUndo(); }} disabled={history.length === 0 || isWon || isGameOver || isPaused} className={cn(
+            "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
+            "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
+            "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
+            "retro:bg-fuchsia-900/20 retro:border-fuchsia-800 retro:hover:bg-fuchsia-900/40 retro:text-cyan-500",
+            "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-600",
+            "industrial:bg-zinc-800 industrial:border-zinc-700 industrial:hover:bg-zinc-700 industrial:text-zinc-400",
+            "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-500"
+          )}>
             <Undo2 className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.undo}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); handleInput(null); }} disabled={isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400">
+          <button onPointerDown={(e) => { createRipple(e); handleInput(null); }} disabled={isWon || isGameOver || isPaused} className={cn(
+            "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
+            "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
+            "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
+            "retro:bg-fuchsia-900/20 retro:border-fuchsia-800 retro:hover:bg-fuchsia-900/40 retro:text-cyan-500",
+            "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-600",
+            "industrial:bg-zinc-800 industrial:border-zinc-700 industrial:hover:bg-zinc-700 industrial:text-zinc-400",
+            "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-500"
+          )}>
             <Eraser className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.erase}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); setPencilMode(!pencilMode); }} disabled={isWon || isGameOver || isPaused} className={cn("relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400", pencilMode && "bg-blue-100 dark:bg-blue-900/50 biker:bg-orange-950/50 border-blue-400 dark:border-blue-500 biker:border-orange-600 text-blue-700 dark:text-blue-300 biker:text-orange-500")}>
+          <button onPointerDown={(e) => { createRipple(e); setPencilMode(!pencilMode); }} disabled={isWon || isGameOver || isPaused} className={cn(
+            "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
+            pencilMode ? cn(
+              "bg-blue-100 dark:bg-blue-900/50 border-blue-400 dark:border-blue-500 text-blue-700 dark:text-blue-300",
+              "biker:bg-orange-950/50 biker:border-orange-600 biker:text-orange-500",
+              "retro:bg-cyan-900/30 retro:border-cyan-500 retro:text-cyan-300",
+              "historical:bg-amber-200 historical:border-stone-400 historical:text-stone-800",
+              "industrial:bg-yellow-900/20 industrial:border-yellow-600 industrial:text-yellow-500",
+              "tattoo:bg-red-950/30 tattoo:border-red-800 tattoo:text-red-500"
+            ) : cn(
+              "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
+              "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
+              "retro:bg-fuchsia-900/20 retro:border-fuchsia-800 retro:hover:bg-fuchsia-900/40 retro:text-cyan-500",
+              "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-600",
+              "industrial:bg-zinc-800 industrial:border-zinc-700 industrial:hover:bg-zinc-700 industrial:text-zinc-400",
+              "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-500"
+            )
+          )}>
             <Pencil className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.notes} {pencilMode ? 'ON' : 'OFF'}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={hints <= 0 || isWon || isGameOver || isPaused} className="relative overflow-hidden flex flex-col items-center justify-center py-2 bg-white dark:bg-slate-800 biker:bg-stone-900 border border-slate-300 dark:border-slate-700 biker:border-stone-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-300 biker:text-stone-400">
+          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={hints <= 0 || isWon || isGameOver || isPaused} className={cn(
+            "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
+            "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
+            "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
+            "retro:bg-fuchsia-900/20 retro:border-fuchsia-800 retro:hover:bg-fuchsia-900/40 retro:text-cyan-500",
+            "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-600",
+            "industrial:bg-zinc-800 industrial:border-zinc-700 industrial:hover:bg-zinc-700 industrial:text-zinc-400",
+            "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-500"
+          )}>
             <div className="relative">
               <Lightbulb className="w-5 h-5 mb-1" />
-              <span className="absolute -top-1.5 -right-2 bg-blue-500 biker:bg-orange-600 text-white text-[9px] font-bold px-1.5 rounded-full transition-colors">{hints}</span>
+              <span className={cn(
+                "absolute -top-1.5 -right-2 text-white text-[9px] font-bold px-1.5 rounded-full transition-colors",
+                "bg-blue-500 biker:bg-orange-600 retro:bg-cyan-500 historical:bg-stone-600 industrial:bg-yellow-600 tattoo:bg-red-700"
+              )}>{hints}</span>
             </div>
             <span className="text-[10px] sm:text-xs font-medium">{t.hint}</span>
           </button>
@@ -735,10 +1006,26 @@ export default function App() {
                 onPointerDown={(e) => { createRipple(e); handleInput(num.toString()); }}
                 disabled={isWon || isGameOver || isPaused || (isComplete && !pencilMode)}
                 className={cn(
-                  "relative overflow-hidden w-[calc(20%-0.4rem)] aspect-square sm:aspect-auto sm:py-3 bg-white dark:bg-slate-800 biker:bg-stone-900 border text-xl font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center",
+                  "relative overflow-hidden w-[calc(20%-0.4rem)] aspect-square sm:aspect-auto sm:py-3 border text-xl font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center",
                   isComplete && !pencilMode
-                    ? "border-slate-200 dark:border-slate-700 biker:border-stone-800/50 bg-slate-100 dark:bg-slate-800/50 biker:bg-stone-900/50 text-slate-300 dark:text-slate-600 biker:text-stone-700 cursor-not-allowed"
-                    : "border-slate-300 dark:border-slate-600 biker:border-stone-700 hover:bg-slate-100 dark:hover:bg-slate-700 biker:hover:bg-stone-800 biker:hover:border-orange-600/50 text-slate-900 dark:text-slate-100 biker:text-orange-500 active:scale-95",
+                    ? cn(
+                      "cursor-not-allowed",
+                      "bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600",
+                      "biker:bg-stone-900/50 biker:border-stone-800/50 biker:text-stone-700",
+                      "retro:bg-fuchsia-950/50 retro:border-fuchsia-900/50 retro:text-fuchsia-800",
+                      "historical:bg-amber-50/50 historical:border-amber-200/50 historical:text-amber-200/50",
+                      "industrial:bg-zinc-900/50 industrial:border-zinc-800/50 industrial:text-zinc-600",
+                      "tattoo:bg-[#0a0a0a]/50 tattoo:border-neutral-900/50 tattoo:text-neutral-700"
+                    )
+                    : cn(
+                      "active:scale-95",
+                      "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100",
+                      "biker:bg-stone-900 biker:border-stone-700 biker:hover:bg-stone-800 biker:text-stone-300 biker:hover:border-orange-600/50 biker:hover:text-orange-500",
+                      "retro:bg-fuchsia-900/30 retro:border-fuchsia-700 retro:hover:bg-fuchsia-800/50 retro:text-cyan-100",
+                      "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-700",
+                      "industrial:bg-zinc-800 industrial:border-zinc-600 industrial:hover:bg-zinc-700 industrial:text-zinc-200",
+                      "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-300"
+                    ),
                   (isWon || isGameOver || isPaused) && "opacity-50 pointer-events-none"
                 )}
               >
@@ -749,9 +1036,25 @@ export default function App() {
         </div>
         
         {/* Footer */}
-        <div className="mt-8 text-center text-slate-500 dark:text-slate-400 biker:text-stone-500 text-sm max-w-[450px] space-y-2 transition-colors">
+        <div className={cn(
+          "mt-8 text-center text-sm max-w-[450px] space-y-2 transition-colors",
+          "text-slate-500 dark:text-slate-400",
+          "biker:text-stone-500",
+          "retro:text-fuchsia-500",
+          "historical:text-stone-500",
+          "industrial:text-zinc-500",
+          "tattoo:text-neutral-600"
+        )}>
           {bestTimes[difficulty] !== null && (
-            <p className="font-medium text-slate-600 dark:text-slate-300 biker:text-stone-400">
+            <p className={cn(
+              "font-medium",
+              "text-slate-600 dark:text-slate-300",
+              "biker:text-stone-400",
+              "retro:text-cyan-500",
+              "historical:text-stone-700",
+              "industrial:text-zinc-400",
+              "tattoo:text-neutral-400"
+            )}>
               {t.bestTime} ({t[difficulty]}): {formatTime(bestTimes[difficulty]!)}
             </p>
           )}
