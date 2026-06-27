@@ -26,7 +26,7 @@ type Cell = {
 };
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
-type Language = 'cs' | 'en';
+type Language = 'cs' | 'en' | 'de' | 'es' | 'fr' | 'zh' | 'ru';
 type Theme = 'light' | 'dark' | 'biker' | 'retro' | 'historical' | 'industrial' | 'tattoo';
 
 const translations = {
@@ -83,6 +83,141 @@ const translations = {
     yes: 'Ano',
     no: 'Ne',
     themes: { light: 'Světlý', dark: 'Tmavý', biker: 'Motorkář', retro: 'Retro', historical: 'Historický', industrial: 'Industriální', tattoo: 'Tattoo' }
+  },
+  de: {
+    title: 'Sudoku',
+    easy: 'Leicht',
+    medium: 'Mittel',
+    hard: 'Schwer',
+    expert: 'Experte',
+    newGame: 'Neues Spiel',
+    solved: 'Gelöst!',
+    solvedDesc: (diff: string, time: string) => `Tolle Leistung! Schwierigkeit ${diff} in ${time} gelöst.`,
+    instructions: 'Nutzen Sie Ihre Tastatur, Pfeiltasten oder das Zahlenfeld unten.',
+    erase: 'Löschen',
+    undo: 'Rückgängig',
+    notes: 'Notizen',
+    hint: 'Tipp',
+    mistakes: 'Fehler',
+    time: 'Zeit',
+    paused: 'Pausiert',
+    resume: 'Fortsetzen',
+    gameOver: 'Spiel vorbei',
+    outOfLives: 'Sie haben 3 Fehler gemacht.',
+    bestTime: 'Beste',
+    restart: 'Neustart',
+    restartConfirm: 'Dieses Spiel neu starten?',
+    yes: 'Ja',
+    no: 'Nein',
+    themes: { light: 'Hell', dark: 'Dunkel', biker: 'Biker', retro: 'Retro', historical: 'Historisch', industrial: 'Industriell', tattoo: 'Tattoo' }
+  },
+  es: {
+    title: 'Sudoku',
+    easy: 'Fácil',
+    medium: 'Medio',
+    hard: 'Difícil',
+    expert: 'Experto',
+    newGame: 'Nuevo juego',
+    solved: '¡Resuelto!',
+    solvedDesc: (diff: string, time: string) => `¡Gran trabajo! Dificultad ${diff} completada en ${time}.`,
+    instructions: 'Usa tu teclado, las flechas o el teclado numérico de abajo.',
+    erase: 'Borrar',
+    undo: 'Deshacer',
+    notes: 'Notas',
+    hint: 'Pista',
+    mistakes: 'Errores',
+    time: 'Tiempo',
+    paused: 'Pausado',
+    resume: 'Reanudar',
+    gameOver: 'Fin del juego',
+    outOfLives: 'Has cometido 3 errores.',
+    bestTime: 'Mejor',
+    restart: 'Reiniciar',
+    restartConfirm: '¿Reiniciar este juego?',
+    yes: 'Sí',
+    no: 'No',
+    themes: { light: 'Claro', dark: 'Oscuro', biker: 'Motero', retro: 'Retro', historical: 'Histórico', industrial: 'Industrial', tattoo: 'Tatuaje' }
+  },
+  fr: {
+    title: 'Sudoku',
+    easy: 'Facile',
+    medium: 'Moyen',
+    hard: 'Difficile',
+    expert: 'Expert',
+    newGame: 'Nouv. jeu',
+    solved: 'Résolu !',
+    solvedDesc: (diff: string, time: string) => `Excellent travail ! Difficulté ${diff} en ${time}.`,
+    instructions: 'Utilisez votre clavier, les flèches ou le pavé numérique.',
+    erase: 'Effacer',
+    undo: 'Annuler',
+    notes: 'Notes',
+    hint: 'Indice',
+    mistakes: 'Erreurs',
+    time: 'Temps',
+    paused: 'En pause',
+    resume: 'Reprendre',
+    gameOver: 'Fin du jeu',
+    outOfLives: 'Vous avez fait 3 erreurs.',
+    bestTime: 'Meilleur',
+    restart: 'Redémarrer',
+    restartConfirm: 'Redémarrer ce jeu ?',
+    yes: 'Oui',
+    no: 'Non',
+    themes: { light: 'Clair', dark: 'Sombre', biker: 'Motard', retro: 'Rétro', historical: 'Historique', industrial: 'Industriel', tattoo: 'Tatouage' }
+  },
+  zh: {
+    title: '数独',
+    easy: '简单',
+    medium: '中等',
+    hard: '困难',
+    expert: '专家',
+    newGame: '新游戏',
+    solved: '解开了！',
+    solvedDesc: (diff: string, time: string) => `干得好！以 ${diff} 难度在 ${time} 内完成。`,
+    instructions: '使用键盘、方向键或下方的数字键盘来玩。',
+    erase: '擦除',
+    undo: '撤销',
+    notes: '笔记',
+    hint: '提示',
+    mistakes: '错误',
+    time: '时间',
+    paused: '已暂停',
+    resume: '继续',
+    gameOver: '游戏结束',
+    outOfLives: '您犯了 3 次错误。',
+    bestTime: '最佳',
+    restart: '重新开始',
+    restartConfirm: '重新开始这个数独？',
+    yes: '是',
+    no: '否',
+    themes: { light: '亮色', dark: '暗色', biker: '骑手', retro: '复古', historical: '历史', industrial: '工业', tattoo: '纹身' }
+  },
+  ru: {
+    title: 'Судоку',
+    easy: 'Легкий',
+    medium: 'Средний',
+    hard: 'Сложный',
+    expert: 'Эксперт',
+    newGame: 'Новая игра',
+    solved: 'Решено!',
+    solvedDesc: (diff: string, time: string) => `Отличная работа! Сложность ${diff} пройдена за ${time}.`,
+    instructions: 'Используйте клавиатуру, стрелки или цифровую панель ниже.',
+    erase: 'Стереть',
+    undo: 'Отмена',
+    notes: 'Заметки',
+    hint: 'Подсказка',
+    mistakes: 'Ошибки',
+    time: 'Время',
+    paused: 'Пауза',
+    resume: 'Продолжить',
+    gameOver: 'Игра окончена',
+    outOfLives: 'Вы сделали 3 ошибки.',
+    bestTime: 'Лучшее',
+    restart: 'Рестарт',
+    restartConfirm: 'Перезапустить эту игру?',
+    yes: 'Да',
+    no: 'Нет',
+    themes: { light: 'Светлая', dark: 'Темная', biker: 'Байкер', retro: 'Ретро', historical: 'Историч.', industrial: 'Индустр.', tattoo: 'Тату' }
   }
 };
 
@@ -118,8 +253,19 @@ export default function App() {
   const [hintedIdx, setHintedIdx] = useState<number | null>(null);
   const [flashIndices, setFlashIndices] = useState<number[]>([]);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   const t = translations[lang];
+
+  const LANGUAGES: { id: Language; label: string }[] = [
+    { id: 'en', label: 'English' },
+    { id: 'cs', label: 'Čeština' },
+    { id: 'de', label: 'Deutsch' },
+    { id: 'es', label: 'Español' },
+    { id: 'fr', label: 'Français' },
+    { id: 'zh', label: '中文' },
+    { id: 'ru', label: 'Русский' },
+  ];
 
   const THEMES: { id: Theme; icon: React.ElementType }[] = [
     { id: 'light', icon: Sun },
@@ -642,18 +788,78 @@ export default function App() {
               </AnimatePresence>
             </div>
 
-            <button onPointerDown={(e) => { createRipple(e); setLang(lang === 'cs' ? 'en' : 'cs'); }} className={cn(
-              "relative overflow-hidden flex items-center gap-1 px-2 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
-              "biker:text-stone-400 biker:hover:bg-stone-800",
-              "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
-              "historical:text-stone-600 historical:hover:bg-amber-200",
-              "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
-              "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
-            )} title="Toggle Language">
-              <Globe className="w-4 h-4" />
-              {lang.toUpperCase()}
-            </button>
+            {/* Language Dropdown */}
+            <div className="relative">
+              <button onPointerDown={(e) => { createRipple(e); setIsLangMenuOpen(!isLangMenuOpen); }} className={cn(
+                "relative overflow-hidden flex items-center gap-1 px-2 py-1.5 text-sm font-medium rounded-md transition-colors",
+                "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
+                "biker:text-stone-400 biker:hover:bg-stone-800",
+                "retro:text-cyan-500 retro:hover:bg-fuchsia-900/50",
+                "historical:text-stone-600 historical:hover:bg-amber-200",
+                "industrial:text-zinc-400 industrial:hover:bg-zinc-700",
+                "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
+              )} title="Toggle Language">
+                <Globe className="w-4 h-4" />
+                {lang.toUpperCase()}
+                <ChevronDown className="w-3 h-3 opacity-70" />
+              </button>
+              
+              <AnimatePresence>
+                {isLangMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsLangMenuOpen(false)} />
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className={cn(
+                        "absolute top-full right-0 mt-2 w-32 shadow-xl rounded-lg border z-50 overflow-hidden",
+                        "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700",
+                        "biker:bg-stone-900 biker:border-stone-800",
+                        "retro:bg-fuchsia-950 retro:border-fuchsia-800",
+                        "historical:bg-amber-50 historical:border-amber-200",
+                        "industrial:bg-zinc-900 industrial:border-zinc-700",
+                        "tattoo:bg-[#111] tattoo:border-neutral-800"
+                      )}
+                    >
+                      {LANGUAGES.map(l => {
+                        const isSelected = lang === l.id;
+                        return (
+                          <button 
+                            key={l.id}
+                            onClick={() => { setLang(l.id); setIsLangMenuOpen(false); }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-4 py-3 text-sm text-left transition-colors",
+                              isSelected
+                                ? cn(
+                                  "font-medium",
+                                  "bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400",
+                                  "biker:bg-stone-800 biker:text-orange-500",
+                                  "retro:bg-fuchsia-900 retro:text-cyan-400",
+                                  "historical:bg-amber-200 historical:text-amber-900",
+                                  "industrial:bg-zinc-800 industrial:text-yellow-500",
+                                  "tattoo:bg-neutral-800 tattoo:text-red-500"
+                                )
+                                : cn(
+                                  "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50",
+                                  "biker:text-stone-400 biker:hover:bg-stone-800/50",
+                                  "retro:text-fuchsia-300 retro:hover:bg-fuchsia-900/50",
+                                  "historical:text-stone-700 historical:hover:bg-amber-100",
+                                  "industrial:text-zinc-400 industrial:hover:bg-zinc-800/50",
+                                  "tattoo:text-neutral-400 tattoo:hover:bg-[#1a1a1a]"
+                                )
+                            )}
+                          >
+                            <span>{l.label}</span>
+                            <span className="opacity-50 text-xs font-mono">{l.id.toUpperCase()}</span>
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
