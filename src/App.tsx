@@ -30,15 +30,27 @@ type Language = 'cs' | 'en' | 'de' | 'es' | 'fr' | 'zh' | 'ru';
 type Theme = 'light' | 'dark' | 'biker' | 'retro' | 'historical' | 'industrial' | 'tattoo';
 type AvatarType = 'user' | 'crown' | 'star' | 'heart' | 'zap' | 'sparkles' | 'smile';
 
+type QuestType = 'win_any' | 'win_hard' | 'play_games' | 'no_mistakes';
+
+interface DailyQuest {
+  date: string;
+  type: QuestType;
+  target: number;
+  progress: number;
+  completed: boolean;
+}
+
 interface PlayerProfile {
   id: string;
   name: string;
   avatar: AvatarType;
   xp: number;
   level: number;
+  hints: number;
   gamesPlayed: number;
   gamesWon: number;
   bestTimes: Record<Difficulty, number | null>;
+  dailyQuest: DailyQuest | null;
 }
 
 const translations = {
@@ -67,7 +79,12 @@ const translations = {
     restartConfirm: 'Restart this puzzle?',
     yes: 'Yes',
     no: 'No',
-    themes: { light: 'Light', dark: 'Dark', biker: 'Biker', retro: 'Retro', historical: 'Historical', industrial: 'Industrial', tattoo: 'Tattoo' }
+    themes: { light: 'Light', dark: 'Dark', biker: 'Biker', retro: 'Retro', historical: 'Historical', industrial: 'Industrial', tattoo: 'Tattoo' },
+    dailyQuest: 'Daily Quest',
+    buyHint: 'Buy Hint (50 XP)',
+    notEnoughXp: 'Not enough XP',
+    completed: 'Completed',
+    reward: 'Reward'
   },
   cs: {
     title: 'Sudoku',
@@ -94,7 +111,12 @@ const translations = {
     restartConfirm: 'Restartovat tuto hru?',
     yes: 'Ano',
     no: 'Ne',
-    themes: { light: 'Světlý', dark: 'Tmavý', biker: 'Motorkář', retro: 'Retro', historical: 'Historický', industrial: 'Industriální', tattoo: 'Tattoo' }
+    themes: { light: 'Světlý', dark: 'Tmavý', biker: 'Motorkář', retro: 'Retro', historical: 'Historický', industrial: 'Industriální', tattoo: 'Tattoo' },
+    dailyQuest: 'Denní úkol',
+    buyHint: 'Koupit nápovědu (50 XP)',
+    notEnoughXp: 'Málo XP',
+    completed: 'Hotovo',
+    reward: 'Odměna'
   },
   de: {
     title: 'Sudoku',
@@ -121,7 +143,12 @@ const translations = {
     restartConfirm: 'Dieses Spiel neu starten?',
     yes: 'Ja',
     no: 'Nein',
-    themes: { light: 'Hell', dark: 'Dunkel', biker: 'Biker', retro: 'Retro', historical: 'Historisch', industrial: 'Industriell', tattoo: 'Tattoo' }
+    themes: { light: 'Hell', dark: 'Dunkel', biker: 'Biker', retro: 'Retro', historical: 'Historisch', industrial: 'Industriell', tattoo: 'Tattoo' },
+    dailyQuest: 'Tagesquest',
+    buyHint: 'Tipp kaufen (50 XP)',
+    notEnoughXp: 'Zu wenig XP',
+    completed: 'Abgeschlossen',
+    reward: 'Belohnung'
   },
   es: {
     title: 'Sudoku',
@@ -148,7 +175,12 @@ const translations = {
     restartConfirm: '¿Reiniciar este juego?',
     yes: 'Sí',
     no: 'No',
-    themes: { light: 'Claro', dark: 'Oscuro', biker: 'Motero', retro: 'Retro', historical: 'Histórico', industrial: 'Industrial', tattoo: 'Tatuaje' }
+    themes: { light: 'Claro', dark: 'Oscuro', biker: 'Motero', retro: 'Retro', historical: 'Histórico', industrial: 'Industrial', tattoo: 'Tatuaje' },
+    dailyQuest: 'Misión diaria',
+    buyHint: 'Comprar pista (50 XP)',
+    notEnoughXp: 'Sin XP',
+    completed: 'Completado',
+    reward: 'Recompensa'
   },
   fr: {
     title: 'Sudoku',
@@ -175,7 +207,12 @@ const translations = {
     restartConfirm: 'Redémarrer ce jeu ?',
     yes: 'Oui',
     no: 'Non',
-    themes: { light: 'Clair', dark: 'Sombre', biker: 'Motard', retro: 'Rétro', historical: 'Historique', industrial: 'Industriel', tattoo: 'Tatouage' }
+    themes: { light: 'Clair', dark: 'Sombre', biker: 'Motard', retro: 'Rétro', historical: 'Historique', industrial: 'Industriel', tattoo: 'Tatouage' },
+    dailyQuest: 'Quête journalière',
+    buyHint: 'Acheter indice (50 XP)',
+    notEnoughXp: 'Pas assez d\'XP',
+    completed: 'Terminé',
+    reward: 'Récompense'
   },
   zh: {
     title: '数独',
@@ -202,7 +239,12 @@ const translations = {
     restartConfirm: '重新开始这个数独？',
     yes: '是',
     no: '否',
-    themes: { light: '亮色', dark: '暗色', biker: '骑手', retro: '复古', historical: '历史', industrial: '工业', tattoo: '纹身' }
+    themes: { light: '亮色', dark: '暗色', biker: '骑手', retro: '复古', historical: '历史', industrial: '工业', tattoo: '纹身' },
+    dailyQuest: '每日任务',
+    buyHint: '购买提示 (50 XP)',
+    notEnoughXp: 'XP 不足',
+    completed: '已完成',
+    reward: '奖励'
   },
   ru: {
     title: 'Судоку',
@@ -229,7 +271,12 @@ const translations = {
     restartConfirm: 'Перезапустить эту игру?',
     yes: 'Да',
     no: 'Нет',
-    themes: { light: 'Светлая', dark: 'Темная', biker: 'Байкер', retro: 'Ретро', historical: 'Историч.', industrial: 'Индустр.', tattoo: 'Тату' }
+    themes: { light: 'Светлая', dark: 'Темная', biker: 'Байкер', retro: 'Ретро', historical: 'Историч.', industrial: 'Индустр.', tattoo: 'Тату' },
+    dailyQuest: 'Ежедневное задание',
+    buyHint: 'Купить подсказку (50 XP)',
+    notEnoughXp: 'Мало XP',
+    completed: 'Завершено',
+    reward: 'Награда'
   }
 };
 
@@ -249,7 +296,6 @@ export default function App() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [mistakes, setMistakes] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [hints, setHints] = useState(3);
   const [history, setHistory] = useState<Cell[][]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [pencilMode, setPencilMode] = useState(false);
@@ -266,6 +312,7 @@ export default function App() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Partial<PlayerProfile> | null>(null);
+  const [showDailyQuest, setShowDailyQuest] = useState(false);
 
   const [profiles, setProfiles] = useState<PlayerProfile[]>([
     {
@@ -274,14 +321,76 @@ export default function App() {
       avatar: 'user',
       xp: 0,
       level: 1,
+      hints: 10,
       gamesPlayed: 0,
       gamesWon: 0,
-      bestTimes: { easy: null, medium: null, hard: null, expert: null }
+      bestTimes: { easy: null, medium: null, hard: null, expert: null },
+      dailyQuest: null
     }
   ]);
   const [currentProfileId, setCurrentProfileId] = useState<string>('default');
 
+  const generateDailyQuest = useCallback((): DailyQuest => {
+    const today = new Date().toISOString().split('T')[0];
+    const types: QuestType[] = ['play_games', 'win_any', 'win_hard', 'no_mistakes'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    let target = 1;
+    if (type === 'play_games') target = Math.floor(Math.random() * 3) + 2; // 2-4
+    if (type === 'win_any') target = Math.floor(Math.random() * 2) + 1; // 1-2
+    
+    return {
+      date: today,
+      type,
+      target,
+      progress: 0,
+      completed: false
+    };
+  }, []);
+
   const currentProfile = profiles.find(p => p.id === currentProfileId) || profiles[0];
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    if (currentProfile.dailyQuest?.date !== today) {
+      setProfiles(prev => prev.map(p => p.id === currentProfileId ? { ...p, dailyQuest: generateDailyQuest() } : p));
+    }
+  }, [currentProfileId, currentProfile.dailyQuest?.date, generateDailyQuest]);
+
+  const updateQuestProgress = useCallback((type: QuestType, amount: number = 1) => {
+    setProfiles(prev => prev.map(p => {
+      if (p.id !== currentProfileId || !p.dailyQuest || p.dailyQuest.completed) return p;
+      if (p.dailyQuest.type !== type) return p;
+      
+      const newProgress = Math.min(p.dailyQuest.target, p.dailyQuest.progress + amount);
+      const justCompleted = newProgress >= p.dailyQuest.target && !p.dailyQuest.completed;
+      
+      let newXp = p.xp;
+      let newHints = p.hints;
+      if (justCompleted) {
+        newXp += 150;
+        newHints += 5;
+        setTimeout(() => {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }, 300);
+      }
+      
+      return {
+        ...p,
+        xp: newXp,
+        hints: newHints,
+        dailyQuest: {
+          ...p.dailyQuest,
+          progress: newProgress,
+          completed: justCompleted ? true : p.dailyQuest.completed
+        }
+      };
+    }));
+  }, [currentProfileId]);
 
   const t = translations[lang];
 
@@ -352,7 +461,6 @@ export default function App() {
         setDifficulty(data.difficulty);
         setMistakes(data.mistakes);
         setTimer(data.timer);
-        setHints(data.hints);
         setHistory(data.history);
         setIsWon(data.isWon);
         setIsGameOver(data.isGameOver);
@@ -389,9 +497,9 @@ export default function App() {
   useEffect(() => {
     if (!isLoaded || board.length === 0) return;
     localStorage.setItem('sudoku-save', JSON.stringify({
-      board, solution, difficulty, mistakes, timer, hints, history, isWon, isGameOver, profiles, currentProfileId
+      board, solution, difficulty, mistakes, timer, history, isWon, isGameOver, profiles, currentProfileId
     }));
-  }, [board, solution, difficulty, mistakes, timer, hints, history, isWon, isGameOver, profiles, currentProfileId, isLoaded]);
+  }, [board, solution, difficulty, mistakes, timer, history, isWon, isGameOver, profiles, currentProfileId, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -465,7 +573,6 @@ export default function App() {
     setIsGameOver(false);
     setMistakes(0);
     setTimer(0);
-    setHints(3);
     setHistory([]);
     setIsPaused(false);
     setShowRestartConfirm(false);
@@ -486,13 +593,13 @@ export default function App() {
     setIsGameOver(false);
     setMistakes(0);
     setTimer(0);
-    setHints(3);
     setHistory([]);
     setIsPaused(false);
     setDifficulty(diff);
     
     setProfiles(prev => prev.map(p => p.id === currentProfileId ? { ...p, gamesPlayed: p.gamesPlayed + 1 } : p));
-  }, [currentProfileId]);
+    updateQuestProgress('play_games');
+  }, [currentProfileId, updateQuestProgress]);
 
   const checkCompletedRegions = useCallback((currentBoard: Cell[], idx: number) => {
     const row = Math.floor(idx / 9);
@@ -570,8 +677,12 @@ export default function App() {
           bestTimes: { ...p.bestTimes, [difficulty]: newBest }
         };
       }));
+      
+      updateQuestProgress('win_any');
+      if (difficulty === 'hard' || difficulty === 'expert') updateQuestProgress('win_hard');
+      if (mistakes === 0) updateQuestProgress('no_mistakes');
     }
-  }, [solution, difficulty, timer, playSound, currentProfileId]);
+  }, [solution, difficulty, timer, playSound, currentProfileId, mistakes, updateQuestProgress]);
 
   const handleInput = useCallback((val: string | null) => {
     if (selectedIdx === null || isWon || isGameOver || isPaused) return;
@@ -637,7 +748,7 @@ export default function App() {
   }, [board, selectedIdx, isWon, isGameOver, isPaused, pencilMode, solution, checkWin, playSound, checkCompletedRegions]);
 
   const useHint = useCallback(() => {
-    if (hints <= 0 || isWon || isGameOver || isPaused) return;
+    if (currentProfile.hints <= 0 || isWon || isGameOver || isPaused) return;
     
     const emptyOrErrorIndices = board
       .map((c, i) => (!c.isGiven && (c.value === null || c.isError) ? i : -1))
@@ -650,7 +761,7 @@ export default function App() {
       : emptyOrErrorIndices[Math.floor(Math.random() * emptyOrErrorIndices.length)];
 
     setHistory(prev => [...prev, board]);
-    setHints(h => h - 1);
+    setProfiles(prev => prev.map(p => p.id === currentProfileId ? { ...p, hints: p.hints - 1 } : p));
     
     const newBoard = [...board];
     const correctVal = solution[targetIdx];
@@ -681,7 +792,12 @@ export default function App() {
     setTimeout(() => setHintedIdx(null), 1000);
     checkCompletedRegions(newBoard, targetIdx);
     checkWin(newBoard);
-  }, [board, hints, isWon, isGameOver, isPaused, selectedIdx, solution, playSound, checkWin, checkCompletedRegions]);
+  }, [board, currentProfile.hints, isWon, isGameOver, isPaused, selectedIdx, solution, playSound, checkWin, checkCompletedRegions, currentProfileId]);
+
+  const buyHint = useCallback(() => {
+    if (currentProfile.xp < 50) return;
+    setProfiles(prev => prev.map(p => p.id === currentProfileId ? { ...p, xp: p.xp - 50, hints: p.hints + 1 } : p));
+  }, [currentProfile.xp, currentProfileId]);
 
   const handleUndo = useCallback(() => {
     if (history.length === 0 || isWon || isGameOver || isPaused) return;
@@ -1036,6 +1152,70 @@ export default function App() {
                             </div>
                           );
                         })}
+                      </div>
+                      <div className={cn(
+                        "p-3 border-t text-sm flex flex-col gap-2",
+                        "border-slate-100 dark:border-slate-700",
+                        "biker:border-stone-800 retro:border-fuchsia-900 historical:border-amber-200 industrial:border-zinc-800 tattoo:border-neutral-800"
+                      )}>
+                        {currentProfile.dailyQuest && (
+                          <div className={cn(
+                            "flex items-center justify-between p-2 rounded-lg border",
+                            currentProfile.dailyQuest.completed 
+                              ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800/50" 
+                              : "bg-slate-50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700",
+                            "biker:bg-stone-900 biker:border-stone-800",
+                            "retro:bg-fuchsia-900/20 retro:border-fuchsia-800",
+                            "historical:bg-amber-100/50 historical:border-amber-200",
+                            "industrial:bg-zinc-900 industrial:border-zinc-800",
+                            "tattoo:bg-[#111] tattoo:border-neutral-800"
+                          )}>
+                            <div className="flex-1">
+                              <div className="text-[10px] font-bold tracking-wider opacity-60 mb-1">{t.dailyQuest.toUpperCase()}</div>
+                              <div className={cn(
+                                "text-xs font-medium",
+                                currentProfile.dailyQuest.completed && "text-green-600 dark:text-green-400"
+                              )}>
+                                {currentProfile.dailyQuest.type === 'play_games' && `${currentProfile.dailyQuest.progress}/${currentProfile.dailyQuest.target} ${t.newGame}`}
+                                {currentProfile.dailyQuest.type === 'win_any' && `${currentProfile.dailyQuest.progress}/${currentProfile.dailyQuest.target} ${t.solved}`}
+                                {currentProfile.dailyQuest.type === 'win_hard' && `${currentProfile.dailyQuest.progress}/${currentProfile.dailyQuest.target} ${t.hard}`}
+                                {currentProfile.dailyQuest.type === 'no_mistakes' && `${currentProfile.dailyQuest.progress}/${currentProfile.dailyQuest.target} (0 ${t.mistakes})`}
+                              </div>
+                            </div>
+                            {currentProfile.dailyQuest.completed ? (
+                              <div className="text-green-500"><Sparkles className="w-4 h-4" /></div>
+                            ) : (
+                              <div className="text-[10px] font-medium opacity-60 flex flex-col items-end">
+                                <span>150 XP</span>
+                                <span>+5 {t.hint}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between mt-1">
+                          <button 
+                            onClick={buyHint}
+                            disabled={currentProfile.xp < 50}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                              "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60",
+                              "biker:bg-orange-900/40 biker:text-orange-400 biker:hover:bg-orange-900/60",
+                              "retro:bg-cyan-900/40 retro:text-cyan-400 retro:hover:bg-cyan-900/60",
+                              "historical:bg-amber-200 historical:text-amber-800 historical:hover:bg-amber-300",
+                              "industrial:bg-yellow-900/40 industrial:text-yellow-500 industrial:hover:bg-yellow-900/60",
+                              "tattoo:bg-red-900/40 tattoo:text-red-400 tattoo:hover:bg-red-900/60"
+                            )}
+                          >
+                            <Lightbulb className="w-3.5 h-3.5" />
+                            <span className="text-xs">{t.buyHint}</span>
+                          </button>
+                          <span className={cn(
+                            "text-xs font-medium opacity-70",
+                            currentProfile.xp < 50 && "text-red-500"
+                          )}>
+                            {currentProfile.xp} XP
+                          </span>
+                        </div>
                       </div>
                     </motion.div>
                   </>
@@ -1519,7 +1699,7 @@ export default function App() {
             <Pencil className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.notes} {pencilMode ? 'ON' : 'OFF'}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={hints <= 0 || isWon || isGameOver || isPaused} className={cn(
+          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={currentProfile.hints <= 0 || isWon || isGameOver || isPaused} className={cn(
             "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
             "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
             "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
@@ -1533,7 +1713,7 @@ export default function App() {
               <span className={cn(
                 "absolute -top-1.5 -right-2 text-white text-[9px] font-bold px-1.5 rounded-full transition-colors",
                 "bg-blue-500 biker:bg-orange-600 retro:bg-cyan-500 historical:bg-stone-600 industrial:bg-yellow-600 tattoo:bg-red-700"
-              )}>{hints}</span>
+              )}>{currentProfile.hints}</span>
             </div>
             <span className="text-[10px] sm:text-xs font-medium">{t.hint}</span>
           </button>
