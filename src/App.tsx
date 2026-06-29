@@ -88,7 +88,8 @@ const translations = {
     stats: 'Statistics',
     gamesPlayed: 'Games Played',
     gamesWon: 'Games Won',
-    winRate: 'Win Rate'
+    winRate: 'Win Rate',
+    confirmHint: 'Confirm?'
   },
   cs: {
     title: 'Sudoku',
@@ -124,7 +125,8 @@ const translations = {
     stats: 'Statistiky',
     gamesPlayed: 'Odehrané hry',
     gamesWon: 'Vyhrané hry',
-    winRate: 'Úspěšnost'
+    winRate: 'Úspěšnost',
+    confirmHint: 'Potvrdit?'
   },
   de: {
     title: 'Sudoku',
@@ -160,7 +162,8 @@ const translations = {
     stats: 'Statistiken',
     gamesPlayed: 'Gespielte Spiele',
     gamesWon: 'Gewonnene Spiele',
-    winRate: 'Siegquote'
+    winRate: 'Siegquote',
+    confirmHint: 'Bestätigen?'
   },
   es: {
     title: 'Sudoku',
@@ -196,7 +199,8 @@ const translations = {
     stats: 'Estadísticas',
     gamesPlayed: 'Juegos jugados',
     gamesWon: 'Juegos ganados',
-    winRate: 'Tasa de victorias'
+    winRate: 'Tasa de victorias',
+    confirmHint: '¿Confirmar?'
   },
   fr: {
     title: 'Sudoku',
@@ -232,7 +236,8 @@ const translations = {
     stats: 'Statistiques',
     gamesPlayed: 'Parties jouées',
     gamesWon: 'Parties gagnées',
-    winRate: 'Taux de victoire'
+    winRate: 'Taux de victoire',
+    confirmHint: 'Confirmer ?'
   },
   zh: {
     title: '数独',
@@ -268,7 +273,8 @@ const translations = {
     stats: '统计',
     gamesPlayed: '进行的游戏',
     gamesWon: '赢得的游戏',
-    winRate: '胜率'
+    winRate: '胜率',
+    confirmHint: '确认吗？'
   },
   ru: {
     title: 'Судоку',
@@ -304,7 +310,8 @@ const translations = {
     stats: 'Статистика',
     gamesPlayed: 'Игр сыграно',
     gamesWon: 'Игр выиграно',
-    winRate: 'Процент побед'
+    winRate: 'Процент побед',
+    confirmHint: 'Подтвердить?'
   }
 };
 
@@ -342,6 +349,7 @@ export default function App() {
   const [editingProfile, setEditingProfile] = useState<Partial<PlayerProfile> | null>(null);
   const [showDailyQuest, setShowDailyQuest] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [showHintConfirm, setShowHintConfirm] = useState(false);
 
   const [profiles, setProfiles] = useState<PlayerProfile[]>([
     {
@@ -855,7 +863,13 @@ export default function App() {
       } else if (e.key.toLowerCase() === 'n') {
         setPencilMode(p => !p);
       } else if (e.key.toLowerCase() === 'h') {
-        useHint();
+        if (showHintConfirm) {
+          useHint();
+          setShowHintConfirm(false);
+        } else {
+          setShowHintConfirm(true);
+          setTimeout(() => setShowHintConfirm(false), 3000);
+        }
       } else if (e.key.toLowerCase() === 'z' && (e.ctrlKey || e.metaKey)) {
         handleUndo();
       } else if (e.key.startsWith('Arrow')) {
@@ -878,7 +892,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIdx, isWon, isGameOver, isPaused, handleInput, useHint, handleUndo, showRestartConfirm]);
+  }, [selectedIdx, isWon, isGameOver, isPaused, handleInput, useHint, handleUndo, showRestartConfirm, showHintConfirm]);
 
   if (!isLoaded || board.length === 0) return null;
 
@@ -1867,23 +1881,42 @@ export default function App() {
             <Pencil className="w-5 h-5 mb-1" />
             <span className="text-[10px] sm:text-xs font-medium">{t.notes} {pencilMode ? 'ON' : 'OFF'}</span>
           </button>
-          <button onPointerDown={(e) => { createRipple(e); useHint(); }} disabled={currentProfile.hints <= 0 || isWon || isGameOver || isPaused} className={cn(
-            "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
-            "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
-            "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
-            "retro:bg-fuchsia-900/20 retro:border-fuchsia-800 retro:hover:bg-fuchsia-900/40 retro:text-cyan-500",
-            "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-600",
-            "industrial:bg-zinc-800 industrial:border-zinc-700 industrial:hover:bg-zinc-700 industrial:text-zinc-400",
-            "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-500"
-          )}>
+          <button 
+            onPointerDown={(e) => { 
+              createRipple(e); 
+              if (showHintConfirm) {
+                useHint();
+                setShowHintConfirm(false);
+              } else {
+                setShowHintConfirm(true);
+                setTimeout(() => setShowHintConfirm(false), 3000);
+              }
+            }} 
+            onMouseLeave={() => setShowHintConfirm(false)}
+            disabled={currentProfile.hints <= 0 || isWon || isGameOver || isPaused} 
+            className={cn(
+              "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
+              showHintConfirm 
+                ? "bg-amber-100 dark:bg-amber-900/40 border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-400 biker:bg-orange-900/40 biker:border-orange-800 biker:text-orange-500 retro:bg-cyan-900/40 retro:border-cyan-800 retro:text-cyan-400 historical:bg-orange-200/50 historical:border-orange-400 historical:text-orange-800 industrial:bg-yellow-900/40 industrial:border-yellow-700 industrial:text-yellow-500 tattoo:bg-red-900/40 tattoo:border-red-800 tattoo:text-red-500"
+                : cn(
+                    "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
+                    "biker:bg-stone-900 biker:border-stone-800 biker:hover:bg-stone-800 biker:text-stone-400",
+                    "retro:bg-fuchsia-900/20 retro:border-fuchsia-800 retro:hover:bg-fuchsia-900/40 retro:text-cyan-500",
+                    "historical:bg-amber-50 historical:border-amber-200 historical:hover:bg-amber-100 historical:text-stone-600",
+                    "industrial:bg-zinc-800 industrial:border-zinc-700 industrial:hover:bg-zinc-700 industrial:text-zinc-400",
+                    "tattoo:bg-[#111] tattoo:border-neutral-800 tattoo:hover:bg-[#1a1a1a] tattoo:text-neutral-500"
+                  )
+            )}>
             <div className="relative">
               <Lightbulb className="w-5 h-5 mb-1" />
-              <span className={cn(
-                "absolute -top-1.5 -right-2 text-white text-[9px] font-bold px-1.5 rounded-full transition-colors",
-                "bg-blue-500 biker:bg-orange-600 retro:bg-cyan-500 historical:bg-stone-600 industrial:bg-yellow-600 tattoo:bg-red-700"
-              )}>{currentProfile.hints}</span>
+              {!showHintConfirm && (
+                <span className={cn(
+                  "absolute -top-1.5 -right-2 text-white text-[9px] font-bold px-1.5 rounded-full transition-colors",
+                  "bg-blue-500 biker:bg-orange-600 retro:bg-cyan-500 historical:bg-stone-600 industrial:bg-yellow-600 tattoo:bg-red-700"
+                )}>{currentProfile.hints}</span>
+              )}
             </div>
-            <span className="text-[10px] sm:text-xs font-medium">{t.hint}</span>
+            <span className="text-[10px] sm:text-xs font-medium">{showHintConfirm ? t.confirmHint : t.hint}</span>
           </button>
         </div>
 
