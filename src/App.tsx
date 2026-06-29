@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSudoku } from 'sudoku-gen';
 import confetti from 'canvas-confetti';
 import { RefreshCw, Eraser, Trophy, Globe, Play, Pause, Moon, Sun, Volume2, VolumeX, Pencil, Lightbulb, Undo2, RotateCcw, Plus, Flame, Gamepad2, Landmark, Factory, Anchor, ChevronDown, User, Crown, Star, Heart, Zap, Sparkles, Smile, Settings, X, BarChart2 } from 'lucide-react';
@@ -350,6 +350,7 @@ export default function App() {
   const [showDailyQuest, setShowDailyQuest] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [showHintConfirm, setShowHintConfirm] = useState(false);
+  const hintClickTimeRef = useRef(0);
 
   const [profiles, setProfiles] = useState<PlayerProfile[]>([
     {
@@ -862,12 +863,16 @@ export default function App() {
         handleInput(null);
       } else if (e.key.toLowerCase() === 'n') {
         setPencilMode(p => !p);
-      } else if (e.key.toLowerCase() === 'h') {
+      } else if (e.key.toLowerCase() === 'h' && !e.repeat) {
+        const now = Date.now();
         if (showHintConfirm) {
-          useHint();
-          setShowHintConfirm(false);
+          if (now - hintClickTimeRef.current > 300) {
+            useHint();
+            setShowHintConfirm(false);
+          }
         } else {
           setShowHintConfirm(true);
+          hintClickTimeRef.current = now;
           setTimeout(() => setShowHintConfirm(false), 3000);
         }
       } else if (e.key.toLowerCase() === 'z' && (e.ctrlKey || e.metaKey)) {
@@ -1882,17 +1887,20 @@ export default function App() {
             <span className="text-[10px] sm:text-xs font-medium">{t.notes} {pencilMode ? 'ON' : 'OFF'}</span>
           </button>
           <button 
-            onPointerDown={(e) => { 
-              createRipple(e); 
+            onClick={(e) => { 
+              createRipple(e);
+              const now = Date.now();
               if (showHintConfirm) {
-                useHint();
-                setShowHintConfirm(false);
+                if (now - hintClickTimeRef.current > 300) {
+                  useHint();
+                  setShowHintConfirm(false);
+                }
               } else {
                 setShowHintConfirm(true);
+                hintClickTimeRef.current = now;
                 setTimeout(() => setShowHintConfirm(false), 3000);
               }
             }} 
-            onMouseLeave={() => setShowHintConfirm(false)}
             disabled={currentProfile.hints <= 0 || isWon || isGameOver || isPaused} 
             className={cn(
               "relative overflow-hidden flex flex-col items-center justify-center py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:pointer-events-none",
