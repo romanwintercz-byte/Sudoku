@@ -903,7 +903,7 @@ export default function App() {
       )}>
         
         {/* Header */}
-        <div className="w-full max-w-[450px] mb-4 flex items-center justify-between relative z-50">
+        <div className="w-full max-w-[450px] mb-4 flex flex-wrap items-center justify-between gap-y-2 relative z-50">
           <h1 className={cn(
             "text-3xl font-bold tracking-tight drop-shadow-sm transition-colors",
             "text-slate-800 dark:text-slate-100",
@@ -913,7 +913,7 @@ export default function App() {
             "industrial:text-yellow-500 industrial:font-black industrial:tracking-tighter industrial:uppercase",
             "tattoo:text-red-600 tattoo:font-serif tattoo:tracking-widest tattoo:uppercase"
           )}>{t.title}</h1>
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
             <button onPointerDown={(e) => { createRipple(e); setSoundEnabled(!soundEnabled); }} className={cn(
               "relative overflow-hidden p-2 rounded-md transition-colors",
               "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800",
@@ -941,7 +941,7 @@ export default function App() {
                   const CurrentIcon = THEMES.find(th => th.id === theme)?.icon || Sun;
                   return <CurrentIcon className="w-5 h-5" />;
                 })()}
-                <ChevronDown className="w-3 h-3 opacity-70" />
+                <ChevronDown className="w-3 h-3 opacity-70 hidden sm:block" />
               </button>
               
               <AnimatePresence>
@@ -1015,8 +1015,8 @@ export default function App() {
                 "tattoo:text-neutral-500 tattoo:hover:bg-neutral-800"
               )} title="Toggle Language">
                 <Globe className="w-4 h-4" />
-                {lang.toUpperCase()}
-                <ChevronDown className="w-3 h-3 opacity-70" />
+                <span className="hidden sm:inline">{lang.toUpperCase()}</span>
+                <ChevronDown className="w-3 h-3 opacity-70 hidden sm:block" />
               </button>
               
               <AnimatePresence>
@@ -1104,7 +1104,7 @@ export default function App() {
                 })()}
                 <span className="hidden sm:inline truncate max-w-[80px]">{currentProfile.name}</span>
                 <span className={cn(
-                  "px-1.5 py-0.5 text-[10px] rounded-full border bg-opacity-20",
+                  "hidden sm:inline-block px-1.5 py-0.5 text-[10px] rounded-full border bg-opacity-20",
                   "border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300",
                   "biker:border-orange-900 biker:text-orange-500",
                   "retro:border-cyan-800 retro:text-cyan-400",
@@ -1112,7 +1112,7 @@ export default function App() {
                   "industrial:border-yellow-700 industrial:text-yellow-500",
                   "tattoo:border-red-900 tattoo:text-red-500"
                 )}>Lvl {currentProfile.level}</span>
-                <ChevronDown className="w-3 h-3 opacity-70" />
+                <ChevronDown className="w-3 h-3 opacity-70 hidden sm:block" />
               </button>
               
               <AnimatePresence>
