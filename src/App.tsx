@@ -732,6 +732,9 @@ export default function App() {
     if (selectedIdx === null || isWon || isGameOver || isPaused) return;
     if (board[selectedIdx].isGiven) return;
 
+    // Prevent overwriting or erasing an already correctly filled cell
+    if (board[selectedIdx].value !== null && !board[selectedIdx].isError) return;
+
     const newBoard = [...board];
     const currentCell = { ...newBoard[selectedIdx] };
 
@@ -1163,7 +1166,7 @@ export default function App() {
                       )}>
                         <span>PROFILES</span>
                         <button onClick={() => {
-                          setEditingProfile({ id: `p-${Date.now()}`, name: `Player ${profiles.length + 1}`, avatar: 'user', xp: 0, level: 1, gamesPlayed: 0, gamesWon: 0, bestTimes: { easy: null, medium: null, hard: null, expert: null } });
+                          setEditingProfile({ id: `p-${Date.now()}`, name: `Player ${profiles.length + 1}`, avatar: 'user', xp: 0, level: 1, hints: 10, gamesPlayed: 0, gamesWon: 0, bestTimes: { easy: null, medium: null, hard: null, expert: null } });
                           setIsEditProfileOpen(true);
                           setIsProfileMenuOpen(false);
                         }} className="hover:text-blue-500 transition-colors" title="Add Profile"><Plus className="w-4 h-4" /></button>
